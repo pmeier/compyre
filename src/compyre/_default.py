@@ -21,8 +21,8 @@ def default_unpack_fns() -> list:
             fn
             for fn in [
                 builtin.unpack_fns.pydantic_model,
-                builtin.unpack_fns.stdlib_mapping,
-                builtin.unpack_fns.stdlib_sequence,
+                builtin.unpack_fns.collections_mapping,
+                builtin.unpack_fns.collections_sequence,
             ]
             if is_available(fn)
         ]
@@ -40,7 +40,7 @@ def default_equal_fns() -> list:
             fn
             for fn in [
                 builtin.equal_fns.stdlib_number,
-                builtin.equal_fns.stdlib_object,
+                builtin.equal_fns.builtins_object,
             ]
             if is_available(fn)
         ]
