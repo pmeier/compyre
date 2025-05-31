@@ -14,5 +14,5 @@ jobs:
       - name: Setup environment
         uses: ./.github/actions/setup-env
 
-      - name: Run type checks
+      - name: Run tests
         run: uv run pytest --cov compyre --cov ./tests --cov-report term-missing
