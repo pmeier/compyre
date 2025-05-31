@@ -1,6 +1,8 @@
 from compyre._availability import available_if
 from compyre.api import Pair, UnpackFnResult
 
+from ._utils import both_isinstance
+
 __all__ = ["pydantic_model"]
 
 
@@ -8,10 +10,7 @@ __all__ = ["pydantic_model"]
 def pydantic_model(p: Pair, /) -> UnpackFnResult:
     import pydantic
 
-    if not (
-        isinstance(p.actual, pydantic.BaseModel)
-        and isinstance(p.expected, pydantic.BaseModel)
-    ):
+    if not both_isinstance(p, pydantic.BaseModel):
         return None
 
     try:

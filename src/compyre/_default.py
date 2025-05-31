@@ -39,6 +39,7 @@ def default_equal_fns() -> list:
         _DEFAULT_EQUAL_FNS = [
             fn
             for fn in [
+                builtin.equal_fns.numpy_ndarray,
                 builtin.equal_fns.stdlib_number,
                 builtin.equal_fns.builtins_object,
             ]
