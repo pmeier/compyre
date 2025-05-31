@@ -3,6 +3,8 @@ from math import isclose
 
 from compyre.api import EqualFnResult, Pair, UnpackFnResult
 
+from ._utils import both_isinstance
+
 __all__ = [
     "builtins_object",
     "collections_mapping",
@@ -12,7 +14,7 @@ __all__ = [
 
 
 def collections_mapping(p: Pair, /) -> UnpackFnResult:
-    if not (isinstance(p.actual, Mapping) and isinstance(p.expected, Mapping)):
+    if not both_isinstance(p, Mapping):
         return None
 
     if p.actual.keys() != p.expected.keys():
@@ -29,9 +31,10 @@ def collections_mapping(p: Pair, /) -> UnpackFnResult:
 
 
 def collections_sequence(p: Pair, /) -> UnpackFnResult:
-    if not (
-        (isinstance(p.actual, Sequence) and not isinstance(p.actual, str))
-        and (isinstance(p.expected, Sequence) and not isinstance(p.expected, str))
+    if (
+        not both_isinstance(p, Sequence)
+        or isinstance(p.actual, str)
+        or isinstance(p.expected, str)
     ):
         return None
 
@@ -47,9 +50,7 @@ def collections_sequence(p: Pair, /) -> UnpackFnResult:
 def stdlib_number(
     p: Pair, /, *, rel_tol: float = 1e-9, abs_tol: float = 0.0
 ) -> EqualFnResult:
-    if not (
-        isinstance(p.actual, (int, float)) and isinstance(p.expected, (int, float))
-    ):
+    if not both_isinstance(p, (int, float)):
         return None
 
     if isclose(p.actual, p.expected, abs_tol=abs_tol, rel_tol=rel_tol):
