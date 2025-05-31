@@ -23,13 +23,13 @@ EqualFnResult = bool | Exception | None
 @dataclasses.dataclass
 class CompareError:
     index: tuple[str | int, ...]
-    error: Exception
+    exception: Exception
 
 
 T = TypeVar("T")
 
 
-def _bind_fn_kwargs(
+def _bind_kwargs(
     fn: Callable[..., T], kwargs: dict[str, Any]
 ) -> tuple[Callable[[Pair], T], set[str]]:
     params = list(inspect.signature(fn, follow_wrapped=True).parameters.values())
@@ -67,7 +67,7 @@ def _parametrize_fns(
     parametrized_fns: list[Callable[[Pair], T]] = []
     used_kwargs: set[str] = set()
     for ufn in unparametrized_fns:
-        pfn, uks = _bind_fn_kwargs(ufn, kwargs)
+        pfn, uks = _bind_kwargs(ufn, kwargs)
         parametrized_fns.append(pfn)
         used_kwargs.update(uks)
     return parametrized_fns, used_kwargs
@@ -101,7 +101,7 @@ def compare(
 
         if unpack_result is not None:
             if isinstance(unpack_result, Exception):
-                errors.append(CompareError(index=pair.index, error=unpack_result))
+                errors.append(CompareError(index=pair.index, exception=unpack_result))
             else:
                 for p in reversed(unpack_result):
                     pairs.appendleft(p)
@@ -121,7 +121,7 @@ def compare(
             )
 
         if isinstance(equal_result, Exception):
-            errors.append(CompareError(index=pair.index, error=equal_result))
+            errors.append(CompareError(index=pair.index, exception=equal_result))
 
     return errors
 

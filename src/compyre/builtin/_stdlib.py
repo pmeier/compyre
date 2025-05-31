@@ -3,10 +3,15 @@ from math import isclose
 
 from compyre.api import EqualFnResult, Pair, UnpackFnResult
 
-__all__ = ["stdlib_mapping", "stdlib_number", "stdlib_object", "stdlib_sequence"]
+__all__ = [
+    "builtins_object",
+    "collections_mapping",
+    "collections_sequence",
+    "stdlib_number",
+]
 
 
-def stdlib_mapping(p: Pair, /) -> UnpackFnResult:
+def collections_mapping(p: Pair, /) -> UnpackFnResult:
     if not (isinstance(p.actual, Mapping) and isinstance(p.expected, Mapping)):
         return None
 
@@ -23,7 +28,7 @@ def stdlib_mapping(p: Pair, /) -> UnpackFnResult:
     ]
 
 
-def stdlib_sequence(p: Pair, /) -> UnpackFnResult:
+def collections_sequence(p: Pair, /) -> UnpackFnResult:
     if not (
         (isinstance(p.actual, Sequence) and not isinstance(p.actual, str))
         and (isinstance(p.expected, Sequence) and not isinstance(p.expected, str))
@@ -53,11 +58,17 @@ def stdlib_number(
         return AssertionError("FIXME statistics here")
 
 
-def stdlib_object(p: Pair, /) -> EqualFnResult:
+def builtins_object(p: Pair, /, *, identity_fallback: bool = True) -> EqualFnResult:
     try:
         if p.actual == p.expected:
             return True
         else:
             return AssertionError(f"{p.actual!r} != {p.expected!r}")
     except Exception as result:
-        return result
+        if not identity_fallback:
+            return result
+
+        if p.actual is p.expected:
+            return True
+        else:
+            return AssertionError(f"{p.actual!r} is not {p.expected!r}")
