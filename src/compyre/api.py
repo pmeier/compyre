@@ -5,6 +5,7 @@ import functools
 import inspect
 import typing
 from collections import deque
+from collections.abc import Mapping, Sequence
 from typing import Any, Callable, Deque, TypeVar
 
 from compyre.alias import Alias
@@ -29,7 +30,7 @@ class Pair:
     expected: Any
 
 
-UnpackFnResult = list[Pair] | Exception | None
+UnpackFnResult = Sequence[Pair] | Exception | None
 EqualFnResult = bool | Exception | None
 
 
@@ -43,9 +44,9 @@ def compare(
     actual: Any,
     expected: Any,
     *,
-    unpack_fns: list[Callable[..., UnpackFnResult]],
-    equal_fns: list[Callable[..., EqualFnResult]],
-    aliases: dict[Alias, Any] | None = None,
+    unpack_fns: Sequence[Callable[..., UnpackFnResult]],
+    equal_fns: Sequence[Callable[..., EqualFnResult]],
+    aliases: Mapping[Alias, Any] | None = None,
     **kwargs: Any,
 ) -> list[CompareError]:
     parametrized_unpack_fns, parametrized_equal_fns = _parametrize_fns(
@@ -95,16 +96,16 @@ def compare(
 
 def _parametrize_fns(
     *,
-    unpack_fns: list[Callable[..., UnpackFnResult]],
-    equal_fns: list[Callable[..., EqualFnResult]],
-    kwargs: dict[str, Any],
-    aliases: dict[Alias, Any],
+    unpack_fns: Sequence[Callable[..., UnpackFnResult]],
+    equal_fns: Sequence[Callable[..., EqualFnResult]],
+    kwargs: Mapping[str, Any],
+    aliases: Mapping[Alias, Any],
 ) -> tuple[
     list[Callable[[Pair], UnpackFnResult]], list[Callable[[Pair], EqualFnResult]]
 ]:
     bound: set[str | Alias] = set()
 
-    def parametrize(fns: list[Callable[..., T]]) -> list[Callable[[Pair], T]]:
+    def parametrize(fns: Sequence[Callable[..., T]]) -> list[Callable[[Pair], T]]:
         parametrized_fns: list[Callable[[Pair], T]] = []
         for fn in fns:
             pfn, b = _bind_kwargs(fn, kwargs, aliases)
@@ -124,7 +125,7 @@ def _parametrize_fns(
 
 
 def _bind_kwargs(
-    fn: Callable[..., T], kwargs: dict[str, Any], aliases: dict[Alias, Any]
+    fn: Callable[..., T], kwargs: Mapping[str, Any], aliases: Mapping[Alias, Any]
 ) -> tuple[Callable[[Pair], T], set[str | Alias]]:
     available_kwargs, available_aliases, required_kwargs = _parse_fn(fn)
 
@@ -195,12 +196,18 @@ def is_equal(
     actual: Any,
     expected: Any,
     *,
-    unpack_fns: list[Callable[..., UnpackFnResult]],
-    equal_fns: list[Callable[..., EqualFnResult]],
+    unpack_fns: Sequence[Callable[..., UnpackFnResult]],
+    equal_fns: Sequence[Callable[..., EqualFnResult]],
+    aliases: Mapping[Alias, Any] | None = None,
     **kwargs: Any,
 ) -> bool:
     return not compare(
-        actual, expected, unpack_fns=unpack_fns, equal_fns=equal_fns, **kwargs
+        actual,
+        expected,
+        unpack_fns=unpack_fns,
+        equal_fns=equal_fns,
+        aliases=aliases,
+        **kwargs,
     )
 
 
@@ -208,12 +215,18 @@ def assert_equal(
     actual: Any,
     expected: Any,
     *,
-    unpack_fns: list[Callable[..., UnpackFnResult]],
-    equal_fns: list[Callable[..., EqualFnResult]],
+    unpack_fns: Sequence[Callable[..., UnpackFnResult]],
+    equal_fns: Sequence[Callable[..., EqualFnResult]],
+    aliases: Mapping[Alias, Any] | None = None,
     **kwargs: Any,
 ) -> None:
     errors = compare(
-        actual, expected, unpack_fns=unpack_fns, equal_fns=equal_fns, **kwargs
+        actual,
+        expected,
+        unpack_fns=unpack_fns,
+        equal_fns=equal_fns,
+        aliases=aliases,
+        **kwargs,
     )
     if not errors:
         return None
