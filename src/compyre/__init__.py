@@ -9,7 +9,7 @@ from ._default import (
 
 try:
     from ._version import __version__
-except ModuleNotFoundError:
+except ModuleNotFoundError:  # pragma: no cover
     import warnings
 
     warnings.warn("compyre was not properly installed!", stacklevel=2)

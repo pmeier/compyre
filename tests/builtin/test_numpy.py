@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from compyre import api, builtin
+from compyre import alias, api, builtin
 
 
 class TestNumpyNdarray:
@@ -37,6 +37,19 @@ class TestNumpyNdarray:
         )
         assert isinstance(result, AssertionError)
 
+    def test_rtol_alias(self):
+        rtol = 1e-2
+        expected = np.array([1.0], dtype=np.float64)
+        actual = expected * (1 + rtol / 2)
+
+        api.assert_equal(
+            actual,
+            expected,
+            unpack_fns=[],
+            equal_fns=[builtin.equal_fns.numpy_ndarray],
+            aliases={alias.RELATIVE_TOLERANCE: rtol},
+        )
+
     def test_atol_equal(self):
         atol = 1e-2
         expected = np.array([1.0], dtype=np.float64)
@@ -56,6 +69,19 @@ class TestNumpyNdarray:
             api.Pair(index=(), actual=actual, expected=expected), atol=atol
         )
         assert isinstance(result, AssertionError)
+
+    def test_atol_alias(self):
+        atol = 1e-2
+        expected = np.array([1.0], dtype=np.float64)
+        actual = expected + atol / 2
+
+        api.assert_equal(
+            actual,
+            expected,
+            unpack_fns=[],
+            equal_fns=[builtin.equal_fns.numpy_ndarray],
+            aliases={alias.ABSOLUTE_TOLERANCE: atol},
+        )
 
     @pytest.mark.parametrize("equal_nan", [True, False])
     def test_equal_nan(self, equal_nan):

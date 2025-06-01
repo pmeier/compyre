@@ -1,7 +1,9 @@
-from typing import Any
+from collections.abc import Mapping
+from typing import Any, Callable
 
 from . import api, builtin
 from ._availability import is_available
+from .alias import Alias
 
 __all__ = [
     "assert_equal",
@@ -11,10 +13,10 @@ __all__ = [
     "is_equal",
 ]
 
-_DEFAULT_UNPACK_FNS: list | None = None
+_DEFAULT_UNPACK_FNS: list[Callable[..., api.UnpackFnResult]] | None = None
 
 
-def default_unpack_fns() -> list:
+def default_unpack_fns() -> list[Callable[..., api.UnpackFnResult]]:
     global _DEFAULT_UNPACK_FNS
     if _DEFAULT_UNPACK_FNS is None:
         _DEFAULT_UNPACK_FNS = [
@@ -30,10 +32,10 @@ def default_unpack_fns() -> list:
     return _DEFAULT_UNPACK_FNS.copy()
 
 
-_DEFAULT_EQUAL_FNS: list | None = None
+_DEFAULT_EQUAL_FNS: list[Callable[..., api.EqualFnResult]] | None = None
 
 
-def default_equal_fns() -> list:
+def default_equal_fns() -> list[Callable[..., api.EqualFnResult]]:
     global _DEFAULT_EQUAL_FNS
     if _DEFAULT_EQUAL_FNS is None:
         _DEFAULT_EQUAL_FNS = [
@@ -49,31 +51,49 @@ def default_equal_fns() -> list:
     return _DEFAULT_EQUAL_FNS.copy()
 
 
-def compare(actual: Any, expected: Any, **kwargs: Any) -> list[api.CompareError]:
+def compare(
+    actual: Any,
+    expected: Any,
+    aliases: Mapping[Alias, Any] | None = None,
+    **kwargs: Any,
+) -> list[api.CompareError]:
     return api.compare(
         actual,
         expected,
         unpack_fns=default_unpack_fns(),
         equal_fns=default_equal_fns(),
+        aliases=aliases,
         **kwargs,
     )
 
 
-def is_equal(actual: Any, expected: Any, **kwargs: Any) -> bool:
+def is_equal(
+    actual: Any,
+    expected: Any,
+    aliases: Mapping[Alias, Any] | None = None,
+    **kwargs: Any,
+) -> bool:
     return api.is_equal(
         actual,
         expected,
         unpack_fns=default_unpack_fns(),
         equal_fns=default_equal_fns(),
+        aliases=aliases,
         **kwargs,
     )
 
 
-def assert_equal(actual: Any, expected: Any, **kwargs: Any) -> None:
+def assert_equal(
+    actual: Any,
+    expected: Any,
+    aliases: Mapping[Alias, Any] | None = None,
+    **kwargs: Any,
+) -> None:
     return api.assert_equal(
         actual,
         expected,
         unpack_fns=default_unpack_fns(),
         equal_fns=default_equal_fns(),
+        aliases=aliases,
         **kwargs,
     )

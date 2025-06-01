@@ -3,10 +3,24 @@ from __future__ import annotations
 import dataclasses
 import functools
 import inspect
+import typing
 from collections import deque
+from collections.abc import Mapping, Sequence
 from typing import Any, Callable, Deque, TypeVar
 
-__all__ = ["CompareError", "EqualFnResult", "Pair", "UnpackFnResult", "compare"]
+from compyre.alias import Alias
+
+__all__ = [
+    "CompareError",
+    "EqualFnResult",
+    "Pair",
+    "UnpackFnResult",
+    "assert_equal",
+    "compare",
+    "is_equal",
+]
+
+T = TypeVar("T")
 
 
 @dataclasses.dataclass
@@ -16,7 +30,7 @@ class Pair:
     expected: Any
 
 
-UnpackFnResult = list[Pair] | Exception | None
+UnpackFnResult = Sequence[Pair] | Exception | None
 EqualFnResult = bool | Exception | None
 
 
@@ -26,67 +40,21 @@ class CompareError:
     exception: Exception
 
 
-T = TypeVar("T")
-
-
-def _bind_kwargs(
-    fn: Callable[..., T], kwargs: dict[str, Any]
-) -> tuple[Callable[[Pair], T], set[str]]:
-    params = list(inspect.signature(fn, follow_wrapped=True).parameters.values())
-
-    if not params:
-        raise TypeError
-
-    pair_arg, *params = params
-    if pair_arg.kind not in {
-        inspect.Parameter.POSITIONAL_ONLY,
-        inspect.Parameter.POSITIONAL_OR_KEYWORD,
-    }:
-        raise TypeError
-
-    bind_kwargs: dict[str, Any] = {}
-    for p in params:
-        if p.kind not in {
-            inspect.Parameter.POSITIONAL_OR_KEYWORD,
-            inspect.Parameter.KEYWORD_ONLY,
-        }:
-            raise TypeError
-
-        v = kwargs.get(p.name, inspect.Parameter.empty)
-        if v is not inspect.Parameter.empty:
-            bind_kwargs[p.name] = v
-        elif p.default is inspect.Parameter.empty:
-            raise TypeError
-
-    return functools.partial(fn, **bind_kwargs), set(bind_kwargs.keys())
-
-
-def _parametrize_fns(
-    unparametrized_fns: list[Callable[..., T]], kwargs: dict[str, Any]
-) -> tuple[list[Callable[[Pair], T]], set[str]]:
-    parametrized_fns: list[Callable[[Pair], T]] = []
-    used_kwargs: set[str] = set()
-    for ufn in unparametrized_fns:
-        pfn, uks = _bind_kwargs(ufn, kwargs)
-        parametrized_fns.append(pfn)
-        used_kwargs.update(uks)
-    return parametrized_fns, used_kwargs
-
-
 def compare(
     actual: Any,
     expected: Any,
     *,
-    unpack_fns: list[Callable[..., UnpackFnResult]],
-    equal_fns: list[Callable[..., EqualFnResult]],
+    unpack_fns: Sequence[Callable[..., UnpackFnResult]],
+    equal_fns: Sequence[Callable[..., EqualFnResult]],
+    aliases: Mapping[Alias, Any] | None = None,
     **kwargs: Any,
 ) -> list[CompareError]:
-    parametrized_unpack_fns, used_unpack_kwargs = _parametrize_fns(unpack_fns, kwargs)
-    parametrized_equal_fns, used_equal_kwargs = _parametrize_fns(equal_fns, kwargs)
-
-    extra = set(kwargs.keys()) - (used_unpack_kwargs | used_equal_kwargs)
-    if extra:
-        raise TypeError
+    parametrized_unpack_fns, parametrized_equal_fns = _parametrize_fns(
+        unpack_fns=unpack_fns,
+        equal_fns=equal_fns,
+        kwargs=kwargs,
+        aliases=aliases if aliases is not None else {},
+    )
 
     pairs: Deque[Pair] = deque([Pair(index=(), actual=actual, expected=expected)])
     errors: list[CompareError] = []
@@ -126,16 +94,120 @@ def compare(
     return errors
 
 
+def _parametrize_fns(
+    *,
+    unpack_fns: Sequence[Callable[..., UnpackFnResult]],
+    equal_fns: Sequence[Callable[..., EqualFnResult]],
+    kwargs: Mapping[str, Any],
+    aliases: Mapping[Alias, Any],
+) -> tuple[
+    list[Callable[[Pair], UnpackFnResult]], list[Callable[[Pair], EqualFnResult]]
+]:
+    bound: set[str | Alias] = set()
+
+    def parametrize(fns: Sequence[Callable[..., T]]) -> list[Callable[[Pair], T]]:
+        parametrized_fns: list[Callable[[Pair], T]] = []
+        for fn in fns:
+            pfn, b = _bind_kwargs(fn, kwargs, aliases)
+            parametrized_fns.append(pfn)
+            bound.update(b)
+
+        return parametrized_fns
+
+    parametrized_unpack_fns = parametrize(unpack_fns)
+    parametrized_equal_fns = parametrize(equal_fns)
+
+    extra = (kwargs.keys() | aliases.keys()) - bound
+    if extra:
+        raise TypeError
+
+    return parametrized_unpack_fns, parametrized_equal_fns
+
+
+def _bind_kwargs(
+    fn: Callable[..., T], kwargs: Mapping[str, Any], aliases: Mapping[Alias, Any]
+) -> tuple[Callable[[Pair], T], set[str | Alias]]:
+    available_kwargs, available_aliases, required_kwargs = _parse_fn(fn)
+
+    bind_kwargs = {k: v for k, v in kwargs.items() if k in available_kwargs}
+    bound: set[str | Alias] = set(bind_kwargs.keys())
+    for a, v in aliases.items():
+        k = available_aliases.get(a)
+        if k is None or k in bind_kwargs:
+            continue
+
+        bind_kwargs[k] = v
+        bound.add(a)
+
+    missing = required_kwargs - bind_kwargs.keys()
+    if missing:
+        raise TypeError
+
+    return functools.partial(fn, **bind_kwargs), bound
+
+
+@functools.cache
+def _parse_fn(fn: Callable) -> tuple[set[str], dict[Alias, str], set[str]]:
+    params = list(
+        inspect.signature(fn, follow_wrapped=True, eval_str=True).parameters.values()
+    )
+    if not params:
+        raise TypeError
+
+    pair_arg, *params = params
+    if pair_arg.kind not in {
+        inspect.Parameter.POSITIONAL_ONLY,
+        inspect.Parameter.POSITIONAL_OR_KEYWORD,
+    }:
+        raise TypeError
+
+    available: set[str] = set()
+    aliases: dict[Alias, str] = {}
+    required: set[str] = set()
+    for p in params:
+        if p.kind not in {
+            inspect.Parameter.POSITIONAL_OR_KEYWORD,
+            inspect.Parameter.KEYWORD_ONLY,
+        }:
+            raise TypeError
+        available.add(p.name)
+
+        if (a := _extract_alias(p)) is not None:
+            aliases[a] = p.name
+
+        if p.default is inspect.Parameter.empty:
+            required.add(p.name)
+
+    return available, aliases, required
+
+
+def _extract_alias(p: inspect.Parameter) -> Alias | None:
+    if p.annotation is inspect.Parameter.empty:
+        return None
+
+    for a in typing.get_args(p.annotation)[1:]:
+        if isinstance(a, Alias):
+            return a
+
+    return None
+
+
 def is_equal(
     actual: Any,
     expected: Any,
     *,
-    unpack_fns: list[Callable[..., UnpackFnResult]],
-    equal_fns: list[Callable[..., EqualFnResult]],
+    unpack_fns: Sequence[Callable[..., UnpackFnResult]],
+    equal_fns: Sequence[Callable[..., EqualFnResult]],
+    aliases: Mapping[Alias, Any] | None = None,
     **kwargs: Any,
 ) -> bool:
     return not compare(
-        actual, expected, unpack_fns=unpack_fns, equal_fns=equal_fns, **kwargs
+        actual,
+        expected,
+        unpack_fns=unpack_fns,
+        equal_fns=equal_fns,
+        aliases=aliases,
+        **kwargs,
     )
 
 
@@ -143,12 +215,18 @@ def assert_equal(
     actual: Any,
     expected: Any,
     *,
-    unpack_fns: list[Callable[..., UnpackFnResult]],
-    equal_fns: list[Callable[..., EqualFnResult]],
+    unpack_fns: Sequence[Callable[..., UnpackFnResult]],
+    equal_fns: Sequence[Callable[..., EqualFnResult]],
+    aliases: Mapping[Alias, Any] | None = None,
     **kwargs: Any,
 ) -> None:
     errors = compare(
-        actual, expected, unpack_fns=unpack_fns, equal_fns=equal_fns, **kwargs
+        actual,
+        expected,
+        unpack_fns=unpack_fns,
+        equal_fns=equal_fns,
+        aliases=aliases,
+        **kwargs,
     )
     if not errors:
         return None
