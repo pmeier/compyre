@@ -61,8 +61,6 @@ select = [
 ignore = [
     # Ignore line too long since ruff will fix everything that is fixable
     "E501",
-    # Ambigiuous variable name
-    "E741",
 ]
 
 [tool.ruff.lint.per-file-ignores]
@@ -99,3 +97,8 @@ warn_unused_ignores = true
 
 warn_return_any = true
 warn_unused_configs = true
+
+[tool.coverage.run]
+omit = [
+    "src/compyre/_version.py"
+]

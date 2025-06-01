@@ -1,19 +1,21 @@
+from typing import Annotated
+
+from compyre import alias, api
 from compyre._availability import available_if
-from compyre.api import EqualFnResult, Pair
 
 from ._utils import both_isinstance
 
 
 @available_if("numpy")
 def numpy_ndarray(
-    p: Pair,
+    p: api.Pair,
     /,
     *,
-    rtol: float = 1e-7,
-    atol: float = 0.0,
+    rtol: Annotated[float, alias.RELATIVE_TOLERANCE] = 1e-7,
+    atol: Annotated[float, alias.ABSOLUTE_TOLERANCE] = 0.0,
     equal_nan: bool = True,
     verbose: bool = True,
-) -> EqualFnResult:
+) -> api.EqualFnResult:
     import numpy as np
 
     if not both_isinstance(p, np.ndarray):

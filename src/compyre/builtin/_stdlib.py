@@ -1,7 +1,10 @@
+from __future__ import annotations
+
 from collections.abc import Mapping, Sequence
 from math import isclose
+from typing import Annotated
 
-from compyre.api import EqualFnResult, Pair, UnpackFnResult
+from compyre import alias, api
 
 from ._utils import both_isinstance
 
@@ -13,7 +16,7 @@ __all__ = [
 ]
 
 
-def collections_mapping(p: Pair, /) -> UnpackFnResult:
+def collections_mapping(p: api.Pair, /) -> api.UnpackFnResult:
     if not both_isinstance(p, Mapping):
         return None
 
@@ -21,7 +24,7 @@ def collections_mapping(p: Pair, /) -> UnpackFnResult:
         return ValueError()
 
     return [
-        Pair(
+        api.Pair(
             index=(*p.index, k if isinstance(k, int) else str(k)),
             actual=v,
             expected=p.expected[k],
@@ -30,7 +33,7 @@ def collections_mapping(p: Pair, /) -> UnpackFnResult:
     ]
 
 
-def collections_sequence(p: Pair, /) -> UnpackFnResult:
+def collections_sequence(p: api.Pair, /) -> api.UnpackFnResult:
     if (
         not both_isinstance(p, Sequence)
         or isinstance(p.actual, str)
@@ -42,14 +45,18 @@ def collections_sequence(p: Pair, /) -> UnpackFnResult:
         return ValueError()
 
     return [
-        Pair(index=(*p.index, i), actual=v, expected=p.expected[i])
+        api.Pair(index=(*p.index, i), actual=v, expected=p.expected[i])
         for i, v in enumerate(p.actual)
     ]
 
 
 def stdlib_number(
-    p: Pair, /, *, rel_tol: float = 1e-9, abs_tol: float = 0.0
-) -> EqualFnResult:
+    p: api.Pair,
+    /,
+    *,
+    rel_tol: Annotated[float, alias.RELATIVE_TOLERANCE] = 1e-9,
+    abs_tol: Annotated[float, alias.ABSOLUTE_TOLERANCE] = 0.0,
+) -> api.EqualFnResult:
     if not both_isinstance(p, (int, float)):
         return None
 
@@ -59,7 +66,9 @@ def stdlib_number(
         return AssertionError("FIXME statistics here")
 
 
-def builtins_object(p: Pair, /, *, identity_fallback: bool = True) -> EqualFnResult:
+def builtins_object(
+    p: api.Pair, /, *, identity_fallback: bool = True
+) -> api.EqualFnResult:
     try:
         if p.actual == p.expected:
             return True
