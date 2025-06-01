@@ -82,7 +82,10 @@ def compare(
                 break
 
         if equal_result is None:
-            equal_result = ValueError("pair couldn't be handled")
+            equal_result = ValueError(
+                f"unable to compare {pair.actual!r} of type {type(pair.actual)} "
+                f"and {pair.expected!r} of type {type(pair.expected)}"
+            )
         elif not equal_result:
             equal_result = AssertionError(
                 f"{pair.actual!r} is not equal to {pair.expected!r}"
@@ -119,7 +122,9 @@ def _parametrize_fns(
 
     extra = (kwargs.keys() | aliases.keys()) - bound
     if extra:
-        raise TypeError
+        raise TypeError(
+            f"unexpected keyword argument(s) {', '.join(repr(e) for e in sorted(extra))}"
+        )
 
     return parametrized_unpack_fns, parametrized_equal_fns
 
@@ -141,7 +146,10 @@ def _bind_kwargs(
 
     missing = required_kwargs - bind_kwargs.keys()
     if missing:
-        raise TypeError
+        raise TypeError(
+            f"missing {len(missing)} keyword-only argument(s): "
+            f"{', '.join(repr(m) for m in sorted(missing))}"
+        )
 
     return functools.partial(fn, **bind_kwargs), bound
 
@@ -152,24 +160,28 @@ def _parse_fn(fn: Callable) -> tuple[set[str], dict[Alias, str], set[str]]:
         inspect.signature(fn, follow_wrapped=True, eval_str=True).parameters.values()
     )
     if not params:
-        raise TypeError
+        raise TypeError(f"{fn} takes no arguments, but has to take at least one")
 
     pair_arg, *params = params
     if pair_arg.kind not in {
         inspect.Parameter.POSITIONAL_ONLY,
         inspect.Parameter.POSITIONAL_OR_KEYWORD,
     }:
-        raise TypeError
+        raise TypeError(
+            f"{fn} takes the 1. argument as {pair_arg.kind.description}, but it has to allow positional"
+        )
 
     available: set[str] = set()
     aliases: dict[Alias, str] = {}
     required: set[str] = set()
-    for p in params:
+    for i, p in enumerate(params, 2):
         if p.kind not in {
             inspect.Parameter.POSITIONAL_OR_KEYWORD,
             inspect.Parameter.KEYWORD_ONLY,
         }:
-            raise TypeError
+            raise TypeError(
+                f"{fn} takes the {i}. argument as {p.kind.description}, but it has to allow keyword"
+            )
         available.add(p.name)
 
         if (a := _extract_alias(p)) is not None:

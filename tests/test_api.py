@@ -45,7 +45,7 @@ class TestParametrizeFns:
         def equal_fn(pair, /, *, bar):  # pragma: no cover
             pass
 
-        with pytest.raises(TypeError, match="^$"):
+        with pytest.raises(TypeError, match="unexpected keyword argument"):
             api._parametrize_fns(
                 unpack_fns=[unpack_fn],
                 equal_fns=[equal_fn],
@@ -57,7 +57,7 @@ class TestParametrizeFns:
                 aliases={},
             )
 
-    def test_extra_annotations(self):
+    def test_extra_aliases(self):
         foo_alias = alias.Alias("foo")
         bar_alias = alias.Alias("bar")
         baz_alias = alias.Alias("baz")
@@ -68,7 +68,7 @@ class TestParametrizeFns:
         def equal_fn(pair, /, *, bar: Annotated[Any, bar_alias]):  # pragma: no cover
             pass
 
-        with pytest.raises(TypeError, match="^$"):
+        with pytest.raises(TypeError, match="unexpected keyword argument"):
             api._parametrize_fns(
                 unpack_fns=[unpack_fn],
                 equal_fns=[equal_fn],
@@ -116,7 +116,7 @@ class TestBindKwargs:
         def required_param(pair, /, *, param):  # pragma: no cover
             pass
 
-        with pytest.raises(TypeError, match="^$"):
+        with pytest.raises(TypeError, match=r"missing \d+ keyword-only argument"):
             api._bind_kwargs(required_param, kwargs={}, aliases={})
 
 
@@ -125,14 +125,14 @@ class TestParseFn:
         def no_params():  # pragma: no cover
             pass
 
-        with pytest.raises(TypeError, match="^$"):
+        with pytest.raises(TypeError, match="no arguments"):
             api._parse_fn(no_params)
 
     def test_pair_arg_keyword_only(self):
         def pair_arg_keyword_only(*, pair):  # pragma: no cover
             pass
 
-        with pytest.raises(TypeError, match="^$"):
+        with pytest.raises(TypeError, match="keyword-only"):
             api._parse_fn(
                 pair_arg_keyword_only,
             )
@@ -141,7 +141,7 @@ class TestParseFn:
         def pair_arg_var_positional(*args):  # pragma: no cover
             pass
 
-        with pytest.raises(TypeError, match="^$"):
+        with pytest.raises(TypeError, match="variadic positional"):
             api._parse_fn(
                 pair_arg_var_positional,
             )
@@ -150,7 +150,7 @@ class TestParseFn:
         def pair_arg_var_keyword(**kwargs):  # pragma: no cover
             pass
 
-        with pytest.raises(TypeError, match="^$"):
+        with pytest.raises(TypeError, match="variadic keyword"):
             api._parse_fn(
                 pair_arg_var_keyword,
             )
@@ -159,21 +159,21 @@ class TestParseFn:
         def param_positional_only(pair, param, /):  # pragma: no cover
             pass
 
-        with pytest.raises(TypeError, match="^$"):
+        with pytest.raises(TypeError, match="positional-only"):
             api._parse_fn(param_positional_only)
 
     def test_param_var_positional(self):
         def param_var_positional(pair, *params):  # pragma: no cover
             pass
 
-        with pytest.raises(TypeError, match="^$"):
+        with pytest.raises(TypeError, match="variadic positional"):
             api._parse_fn(param_var_positional)
 
     def test_param_var_keyword(self):
         def param_var_keyword(pair, param, **params):  # pragma: no cover
             pass
 
-        with pytest.raises(TypeError, match="^$"):
+        with pytest.raises(TypeError, match="variadic keyword"):
             api._parse_fn(param_var_keyword)
 
     def test_parse(self):
@@ -273,13 +273,15 @@ class TestCompare:
         assert actual == expected
 
     def test_unhandled(self):
-        def unpack_fn(pair, /):
-            return None
+        class Value:
+            def __repr__(self):
+                return "sentinel"
 
         def equal_fn(pair, /):
             return None
 
-        errors = api.compare(None, None, unpack_fns=[unpack_fn], equal_fns=[equal_fn])
+        value = Value()
+        errors = api.compare(value, value, unpack_fns=[], equal_fns=[equal_fn])
 
         assert len(errors) == 1
         error = errors[0]
@@ -287,7 +289,10 @@ class TestCompare:
         assert error.index == ()
 
         assert isinstance(error.exception, ValueError)
-        assert "couldn't be handled" in str(error.exception)
+        assert all(
+            s in str(error.exception)
+            for s in ["unable to compare", repr(value), str(type(value))]
+        )
 
     def test_default_error_message(self):
         class Object:
