@@ -160,7 +160,9 @@ def _parse_fn(fn: Callable) -> tuple[set[str], dict[Alias, str], set[str]]:
         inspect.signature(fn, follow_wrapped=True, eval_str=True).parameters.values()
     )
     if not params:
-        raise TypeError(f"{fn} takes no arguments, but has to take at least one")
+        raise TypeError(
+            f"{fn} takes no arguments, but has to take at least one positional"
+        )
 
     pair_arg, *params = params
     if pair_arg.kind not in {
