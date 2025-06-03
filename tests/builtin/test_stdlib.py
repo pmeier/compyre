@@ -2,7 +2,7 @@ from copy import deepcopy
 
 import pytest
 
-from compyre import api, builtin
+from compyre import alias, api, builtin
 
 
 class TestStdlibMapping:
@@ -86,8 +86,100 @@ class TestStdlibSequence:
         )
 
 
-class TestStdlibNumber:
-    pass
+class TestBuiltinsIntFloat:
+    @pytest.mark.parametrize(
+        ("actual", "expected"),
+        [(object(), object()), (1.0, object()), (object(), 2), (False, 0), (1.0, True)],
+    )
+    def test_not_supported(self, actual, expected):
+        assert (
+            builtin.unpack_fns.collections_sequence(
+                api.Pair(index=(), actual=actual, expected=expected)
+            )
+            is None
+        )
+
+    @pytest.mark.parametrize("expected_type", [int, float])
+    def test_rtol_equal(self, expected_type):
+        rel_tol = 1e-2
+        expected = expected_type(1.0)
+        actual = expected * (1 + rel_tol / 2)
+
+        result = builtin.equal_fns.builtins_int_float(
+            api.Pair(index=(), actual=actual, expected=expected),
+            rel_tol=rel_tol,
+            abs_tol=0,
+        )
+        assert result is True
+
+    @pytest.mark.parametrize("expected_type", [int, float])
+    def test_rtol_not_equal(self, expected_type):
+        rel_tol = 1e-2
+        expected = expected_type(1.0)
+        actual = expected * (1 + rel_tol * 2)
+
+        result = builtin.equal_fns.builtins_int_float(
+            api.Pair(index=(), actual=actual, expected=expected),
+            rel_tol=rel_tol,
+            abs_tol=0,
+        )
+        assert isinstance(result, AssertionError)
+
+    @pytest.mark.parametrize("expected_type", [int, float])
+    def test_rtol_alias(self, expected_type):
+        rtol = 1e-2
+        expected = expected_type(1.0)
+        actual = expected * (1 + rtol / 2)
+
+        api.assert_equal(
+            actual,
+            expected,
+            unpack_fns=[],
+            equal_fns=[builtin.equal_fns.builtins_int_float],
+            aliases={alias.RELATIVE_TOLERANCE: rtol},
+            abs_tol=0,
+        )
+
+    @pytest.mark.parametrize("expected_type", [int, float])
+    def test_atol_equal(self, expected_type):
+        abs_tol = 1e-2
+        expected = expected_type(1.0)
+        actual = expected + abs_tol / 2
+
+        result = builtin.equal_fns.builtins_int_float(
+            api.Pair(index=(), actual=actual, expected=expected),
+            abs_tol=abs_tol,
+            rel_tol=0,
+        )
+        assert result is True
+
+    @pytest.mark.parametrize("expected_type", [int, float])
+    def test_atol_not_equal(self, expected_type):
+        abs_tol = 1e-2
+        expected = expected_type(1.0)
+        actual = expected + abs_tol * 2
+
+        result = builtin.equal_fns.builtins_int_float(
+            api.Pair(index=(), actual=actual, expected=expected),
+            abs_tol=abs_tol,
+            rel_tol=0,
+        )
+        assert isinstance(result, AssertionError)
+
+    @pytest.mark.parametrize("expected_type", [int, float])
+    def test_atol_alias(self, expected_type):
+        abs_tol = 1e-2
+        expected = expected_type(1.0)
+        actual = expected + abs_tol / 2
+
+        api.assert_equal(
+            actual,
+            expected,
+            unpack_fns=[],
+            equal_fns=[builtin.equal_fns.builtins_int_float],
+            aliases={alias.ABSOLUTE_TOLERANCE: abs_tol},
+            rel_tol=0,
+        )
 
 
 class TestStdlibObject:

@@ -23,7 +23,9 @@ class TestNumpyNdarray:
         actual = expected * (1 + rtol / 2)
 
         result = builtin.equal_fns.numpy_ndarray(
-            api.Pair(index=(), actual=actual, expected=expected), rtol=rtol
+            api.Pair(index=(), actual=actual, expected=expected),
+            rtol=rtol,
+            atol=0,
         )
         assert result is True
 
@@ -33,7 +35,9 @@ class TestNumpyNdarray:
         actual = expected * (1 + rtol * 2)
 
         result = builtin.equal_fns.numpy_ndarray(
-            api.Pair(index=(), actual=actual, expected=expected), rtol=rtol
+            api.Pair(index=(), actual=actual, expected=expected),
+            rtol=rtol,
+            atol=0,
         )
         assert isinstance(result, AssertionError)
 
@@ -48,6 +52,7 @@ class TestNumpyNdarray:
             unpack_fns=[],
             equal_fns=[builtin.equal_fns.numpy_ndarray],
             aliases={alias.RELATIVE_TOLERANCE: rtol},
+            atol=0,
         )
 
     def test_atol_equal(self):
@@ -56,7 +61,9 @@ class TestNumpyNdarray:
         actual = expected + atol / 2
 
         result = builtin.equal_fns.numpy_ndarray(
-            api.Pair(index=(), actual=actual, expected=expected), atol=atol
+            api.Pair(index=(), actual=actual, expected=expected),
+            atol=atol,
+            rtol=0,
         )
         assert result is True
 
@@ -66,7 +73,9 @@ class TestNumpyNdarray:
         actual = expected + atol * 2
 
         result = builtin.equal_fns.numpy_ndarray(
-            api.Pair(index=(), actual=actual, expected=expected), atol=atol
+            api.Pair(index=(), actual=actual, expected=expected),
+            atol=atol,
+            rtol=0,
         )
         assert isinstance(result, AssertionError)
 
@@ -81,6 +90,7 @@ class TestNumpyNdarray:
             unpack_fns=[],
             equal_fns=[builtin.equal_fns.numpy_ndarray],
             aliases={alias.ABSOLUTE_TOLERANCE: atol},
+            rtol=0,
         )
 
     @pytest.mark.parametrize("equal_nan", [True, False])
