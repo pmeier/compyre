@@ -39,6 +39,10 @@ class TestStdlibMapping:
             api.Pair(index=(), actual=deepcopy(actual), expected=deepcopy(expected))
         )
         assert isinstance(result, Exception)
+        assert all(
+            s in str(result)
+            for s in ["mapping keys mismatch", repr("bar"), repr("baz")]
+        )
 
 
 class TestStdlibSequence:
@@ -76,6 +80,10 @@ class TestStdlibSequence:
             api.Pair(index=(), actual=deepcopy(actual), expected=deepcopy(expected))
         )
         assert isinstance(result, Exception)
+        assert all(
+            s in str(result)
+            for s in ["sequence length mismatch", str(len(actual)), str(len(expected))]
+        )
 
 
 class TestStdlibNumber:

@@ -20,8 +20,14 @@ def collections_mapping(p: api.Pair, /) -> api.UnpackFnResult:
     if not both_isinstance(p, Mapping):
         return None
 
-    if p.actual.keys() != p.expected.keys():
-        return ValueError()
+    extra = p.actual.keys() - p.expected.keys()
+    missing = p.expected.keys() - p.actual.keys()
+    if extra or missing:
+        return ValueError(
+            f"actual mapping keys mismatch expected:\n\n"
+            f"extra: {', '.join(repr(k) for k in sorted(extra))}\n"
+            f"missing: {', '.join(repr(k) for k in sorted(missing))}\n"
+        )
 
     return [
         api.Pair(
@@ -41,8 +47,8 @@ def collections_sequence(p: api.Pair, /) -> api.UnpackFnResult:
     ):
         return None
 
-    if len(p.actual) != len(p.expected):
-        return ValueError()
+    if (la := len(p.actual)) != (le := len(p.expected)):
+        return ValueError(f"actual sequence length mismatches expected: {la} != {le}")
 
     return [
         api.Pair(index=(*p.index, i), actual=v, expected=p.expected[i])
