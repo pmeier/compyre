@@ -68,7 +68,7 @@ class TestParametrizeFns:
         def equal_fn(pair, /, *, bar: Annotated[Any, bar_alias]):  # pragma: no cover
             pass
 
-        with pytest.raises(TypeError, match="unexpected keyword argument"):
+        with pytest.raises(TypeError, match="unexpected alias"):
             api._parametrize_fns(
                 unpack_fns=[unpack_fn],
                 equal_fns=[equal_fn],

@@ -120,11 +120,19 @@ def _parametrize_fns(
     parametrized_unpack_fns = parametrize(unpack_fns)
     parametrized_equal_fns = parametrize(equal_fns)
 
-    extra = (kwargs.keys() | aliases.keys()) - bound
-    if extra:
-        raise TypeError(
-            f"unexpected keyword argument(s) {', '.join(repr(e) for e in sorted(extra))}"
-        )
+    extra_kwargs = kwargs.keys() - bound
+    extra_aliases = aliases.keys() - bound
+    if extra_kwargs or extra_aliases:
+        parts = []
+        if extra_kwargs:
+            parts.append(
+                f"unexpected keyword argument(s) {', '.join(repr(e) for e in sorted(extra_kwargs))}"
+            )
+        if extra_aliases:
+            parts.append(
+                f"unexpected alias(es) {', '.join(repr(e) for e in sorted(extra_aliases, key=str))}"
+            )
+        raise TypeError("\n".join(parts))
 
     return parametrized_unpack_fns, parametrized_equal_fns
 
