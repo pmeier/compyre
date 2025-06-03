@@ -6,13 +6,13 @@ from typing import Annotated
 
 from compyre import alias, api
 
-from ._utils import both_isinstance
+from ._utils import both_isinstance, either_isinstance
 
 __all__ = [
+    "builtins_int_float",
     "builtins_object",
     "collections_mapping",
     "collections_sequence",
-    "stdlib_number",
 ]
 
 
@@ -40,11 +40,7 @@ def collections_mapping(p: api.Pair, /) -> api.UnpackFnResult:
 
 
 def collections_sequence(p: api.Pair, /) -> api.UnpackFnResult:
-    if (
-        not both_isinstance(p, Sequence)
-        or isinstance(p.actual, str)
-        or isinstance(p.expected, str)
-    ):
+    if not both_isinstance(p, Sequence) or either_isinstance(p, str):
         return None
 
     if (la := len(p.actual)) != (le := len(p.expected)):
@@ -56,20 +52,39 @@ def collections_sequence(p: api.Pair, /) -> api.UnpackFnResult:
     ]
 
 
-def stdlib_number(
+def builtins_int_float(
     p: api.Pair,
     /,
     *,
     rel_tol: Annotated[float, alias.RELATIVE_TOLERANCE] = 1e-9,
     abs_tol: Annotated[float, alias.ABSOLUTE_TOLERANCE] = 0.0,
 ) -> api.EqualFnResult:
-    if not both_isinstance(p, (int, float)):
+    if not both_isinstance(p, (int, float)) or either_isinstance(p, bool):
         return None
 
     if isclose(p.actual, p.expected, abs_tol=abs_tol, rel_tol=rel_tol):
         return True
     else:
-        return AssertionError("FIXME statistics here")
+
+        def diff_msg(*, typ: str, diff: float, tol: float) -> str:
+            msg = f"{typ.title()} difference: {diff}"
+            if tol > 0:
+                msg += f" (up to {tol} allowed)"
+            return msg
+
+        equality = rel_tol == 0 and abs_tol == 0
+        abs_diff = abs(p.actual - p.expected)
+        rel_diff = abs_diff / max(abs(p.actual), abs(p.expected))
+
+        return AssertionError(
+            "\n".join(
+                [
+                    f"Real numbers {p.actual} and {p.expected} are not {'equal' if equality else 'close'}!\n",
+                    diff_msg(typ="absolute", diff=abs_diff, tol=abs_tol),
+                    diff_msg(typ="relative", diff=rel_diff, tol=rel_tol),
+                ]
+            )
+        )
 
 
 def builtins_object(

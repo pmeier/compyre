@@ -42,7 +42,7 @@ def default_equal_fns() -> list[Callable[..., api.EqualFnResult]]:
             fn
             for fn in [
                 builtin.equal_fns.numpy_ndarray,
-                builtin.equal_fns.stdlib_number,
+                builtin.equal_fns.builtins_int_float,
                 builtin.equal_fns.builtins_object,
             ]
             if is_available(fn)
