@@ -6,6 +6,7 @@ import inspect
 import typing
 from collections import deque
 from collections.abc import Mapping, Sequence
+from textwrap import indent
 from typing import Any, Callable, Deque, TypeVar
 
 from compyre.alias import Alias
@@ -38,6 +39,10 @@ EqualFnResult = bool | Exception | None
 class CompareError:
     index: tuple[str | int, ...]
     exception: Exception
+
+
+class CompyreError(Exception):
+    pass
 
 
 def compare(
@@ -82,7 +87,7 @@ def compare(
                 break
 
         if equal_result is None:
-            equal_result = ValueError(
+            equal_result = CompyreError(
                 f"unable to compare {pair.actual!r} of type {type(pair.actual)} "
                 f"and {pair.expected!r} of type {type(pair.expected)}"
             )
@@ -223,13 +228,15 @@ def is_equal(
     aliases: Mapping[Alias, Any] | None = None,
     **kwargs: Any,
 ) -> bool:
-    return not compare(
-        actual,
-        expected,
-        unpack_fns=unpack_fns,
-        equal_fns=equal_fns,
-        aliases=aliases,
-        **kwargs,
+    return not _extract_equal_errors(
+        compare(
+            actual,
+            expected,
+            unpack_fns=unpack_fns,
+            equal_fns=equal_fns,
+            aliases=aliases,
+            **kwargs,
+        )
     )
 
 
@@ -242,16 +249,42 @@ def assert_equal(
     aliases: Mapping[Alias, Any] | None = None,
     **kwargs: Any,
 ) -> None:
-    errors = compare(
-        actual,
-        expected,
-        unpack_fns=unpack_fns,
-        equal_fns=equal_fns,
-        aliases=aliases,
-        **kwargs,
+    equal_errors = _extract_equal_errors(
+        compare(
+            actual,
+            expected,
+            unpack_fns=unpack_fns,
+            equal_fns=equal_fns,
+            aliases=aliases,
+            **kwargs,
+        )
     )
-    if not errors:
+    if not equal_errors:
         return None
 
-    # FIXME
-    raise AssertionError(str(errors))
+    raise AssertionError(
+        f"comparison resulted in {len(equal_errors)} error(s):\n\n{_format_compare_errors(equal_errors)}"
+    )
+
+
+def _extract_equal_errors(errors: list[CompareError]) -> list[CompareError]:
+    equal_errors: list[CompareError] = []
+    compyre_errors: list[CompareError] = []
+    for e in errors:
+        (
+            compyre_errors if isinstance(e.exception, CompyreError) else equal_errors
+        ).append(e)
+
+    if compyre_errors:
+        raise CompyreError(_format_compare_errors(compyre_errors))
+
+    return equal_errors
+
+
+def _format_compare_errors(errors: list[CompareError]) -> str:
+    parts = []
+    for e in errors:
+        i = ".".join(map(str, e.index))
+        m = f"{type(e.exception).__name__}: {e.exception}"
+        parts.append(f"{i}\n{indent(m, ' ' * 4)}")
+    return "\n".join(parts)

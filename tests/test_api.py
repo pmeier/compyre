@@ -288,7 +288,7 @@ class TestCompare:
 
         assert error.index == ()
 
-        assert isinstance(error.exception, ValueError)
+        assert isinstance(error.exception, api.CompyreError)
         assert all(
             s in str(error.exception)
             for s in ["unable to compare", repr(value), str(type(value))]
@@ -320,12 +320,19 @@ class TestCompare:
         assert repr(expected) in str(error.exception)
 
 
-@pytest.mark.parametrize("result", [True, False])
-def test_is_equal(result):
+@pytest.mark.parametrize("equal_fn_result", [True, False, None])
+def test_is_equal(equal_fn_result):
     def equal_fn(pair, /):
-        return result
+        return equal_fn_result
 
-    assert api.is_equal(None, None, unpack_fns=[], equal_fns=[equal_fn]) is result
+    if equal_fn_result is None:
+        with pytest.raises(api.CompyreError):
+            api.is_equal(None, None, unpack_fns=[], equal_fns=[equal_fn])
+    else:
+        assert (
+            api.is_equal(None, None, unpack_fns=[], equal_fns=[equal_fn])
+            is equal_fn_result
+        )
 
 
 class TestAssertEqual:
@@ -333,8 +340,36 @@ class TestAssertEqual:
         def equal_fn(pair, /):
             return True
 
-        api.assert_equal(None, None, unpack_fns=[], equal_fns=[equal_fn])
+        assert api.assert_equal(None, None, unpack_fns=[], equal_fns=[equal_fn]) is None
+
+    def test_unhandled(self):
+        actual = ["foo", None]
+        expected = ["bar", None]
+
+        def equal_fn(pair, /):
+            return None if pair.actual is None else pair.actual == pair.expected
+
+        with pytest.raises(api.CompyreError):
+            api.assert_equal(
+                actual,
+                expected,
+                unpack_fns=[builtin.unpack_fns.collections_sequence],
+                equal_fns=[equal_fn],
+            )
 
     def test_errors(self):
-        # FIXME
-        pass
+        actual = ["foo", "bar", [0, 1], {"nested": True, "qux": True}]
+        expected = ["foo", "baz", [0, -1], {"nested": True, "qux": False}]
+
+        with pytest.raises(AssertionError, match="3 error") as info:
+            api.assert_equal(
+                actual,
+                expected,
+                unpack_fns=[
+                    builtin.unpack_fns.collections_sequence,
+                    builtin.unpack_fns.collections_mapping,
+                ],
+                equal_fns=[builtin.equal_fns.builtins_object],
+            )
+
+        assert all(s in str(info.value) for s in ["1", "2.1", "3.qux"])
