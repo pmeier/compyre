@@ -52,7 +52,7 @@ class TestCollectionsMapping:
 class TestCollectionsSequence:
     @pytest.mark.parametrize(
         ("actual", "expected"),
-        [(object(), object()), ([], object()), (object(), []), ({}, {})],
+        [([], object()), (object(), []), ([], {}), ("abc", ["a", "b", "c"])],
     )
     def test_not_supported(self, actual, expected):
         assert (
@@ -246,4 +246,43 @@ class TestBuiltinsNumber:
 
 
 class TestStdlibObject:
-    pass
+    @pytest.mark.parametrize("value", [None, False, True, "abc"])
+    def test_equal(self, value):
+        result = builtin.equal_fns.builtins_object(
+            api.Pair(index=(), actual=value, expected=value), identity_fallback=False
+        )
+        assert result is True
+
+    def test_not_equal(self):
+        result = builtin.equal_fns.builtins_object(
+            api.Pair(index=(), actual=False, expected=True), identity_fallback=False
+        )
+        assert isinstance(result, AssertionError)
+
+    @pytest.mark.parametrize("identity_fallback", [True, False])
+    def test_identical(self, identity_fallback):
+        exc = AssertionError("sentinel")
+
+        class NoEq:
+            def __eq__(self, other):
+                raise exc
+
+        value = NoEq()
+
+        result = builtin.equal_fns.builtins_object(
+            api.Pair(index=(), actual=value, expected=value),
+            identity_fallback=identity_fallback,
+        )
+        assert result is (True if identity_fallback else exc)
+
+    def test_not_identical(self):
+        exc = AssertionError("sentinel")
+
+        class NoEq:
+            def __eq__(self, other):
+                raise exc
+
+        result = builtin.equal_fns.builtins_object(
+            api.Pair(index=(), actual=NoEq(), expected=object()), identity_fallback=True
+        )
+        assert isinstance(result, AssertionError) and result is not exc
