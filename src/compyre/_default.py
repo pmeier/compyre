@@ -21,8 +21,13 @@ def default_unpack_fns() -> list[Callable[..., api.UnpackFnResult]]:
     if _DEFAULT_UNPACK_FNS is None:
         _DEFAULT_UNPACK_FNS = [
             fn
-            for name in builtin.unpack_fns.__all__
-            if is_available((fn := getattr(builtin.unpack_fns, name)))
+            for fn in [
+                builtin.unpack_fns.pydantic_model,
+                builtin.unpack_fns.collections_ordered_dict,
+                builtin.unpack_fns.collections_mapping,
+                builtin.unpack_fns.collections_sequence,
+            ]
+            if is_available(fn)
         ]
 
     return _DEFAULT_UNPACK_FNS.copy()
@@ -36,8 +41,12 @@ def default_equal_fns() -> list[Callable[..., api.EqualFnResult]]:
     if _DEFAULT_EQUAL_FNS is None:
         _DEFAULT_EQUAL_FNS = [
             fn
-            for name in builtin.equal_fns.__all__
-            if is_available((fn := getattr(builtin.equal_fns, name)))
+            for fn in [
+                builtin.equal_fns.numpy_ndarray,
+                builtin.equal_fns.builtins_int_float,
+                builtin.equal_fns.builtins_object,
+            ]
+            if is_available(fn)
         ]
 
     return _DEFAULT_EQUAL_FNS.copy()
