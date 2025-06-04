@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import OrderedDict
 from collections.abc import Mapping, Sequence
 from math import isclose
 from typing import Annotated
@@ -24,7 +25,7 @@ def collections_mapping(p: api.Pair, /) -> api.UnpackFnResult:
     missing = p.expected.keys() - p.actual.keys()
     if extra or missing:
         return ValueError(
-            f"actual mapping keys mismatch expected:\n\n"
+            f"mapping keys mismatch:\n\n"
             f"extra: {', '.join(repr(k) for k in sorted(extra))}\n"
             f"missing: {', '.join(repr(k) for k in sorted(missing))}\n"
         )
@@ -44,11 +45,28 @@ def collections_sequence(p: api.Pair, /) -> api.UnpackFnResult:
         return None
 
     if (la := len(p.actual)) != (le := len(p.expected)):
-        return ValueError(f"actual sequence length mismatches expected: {la} != {le}")
+        return ValueError(f"sequence length mismatches: {la} != {le}")
 
     return [
         api.Pair(index=(*p.index, i), actual=v, expected=p.expected[i])
         for i, v in enumerate(p.actual)
+    ]
+
+
+def collections_ordered_dict(p: api.Pair, /) -> api.UnpackFnResult:
+    if not both_isinstance(p, OrderedDict):
+        return None
+
+    if (aks := list(p.actual.keys())) != (eks := list(p.expected.keys())):
+        return ValueError(f"ordered keys mismatch: {list(aks)} != {list(eks)}")
+
+    return [
+        api.Pair(
+            index=(*p.index, k if isinstance(k, int) else str(k)),
+            actual=v,
+            expected=p.expected[k],
+        )
+        for k, v in p.actual.items()
     ]
 
 
