@@ -1,3 +1,6 @@
+__all__ = ["ABSOLUTE_TOLERANCE", "NAN_EQUALITY", "RELATIVE_TOLERANCE", "Alias"]
+
+
 class Alias:
     def __init__(self, name: str) -> None:
         self._name = name
@@ -15,3 +18,4 @@ class Alias:
 
 RELATIVE_TOLERANCE = Alias("relative_tolerance")
 ABSOLUTE_TOLERANCE = Alias("absolute_tolerance")
+NAN_EQUALITY = Alias("nan_equality")

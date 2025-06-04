@@ -42,6 +42,7 @@ def default_equal_fns() -> list[Callable[..., api.EqualFnResult]]:
             fn
             for fn in [
                 builtin.equal_fns.numpy_ndarray,
+                builtin.equal_fns.torch_tensor,
                 builtin.equal_fns.builtins_number,
                 builtin.equal_fns.builtins_object,
             ]
