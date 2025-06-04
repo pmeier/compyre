@@ -7,7 +7,6 @@ from .alias import Alias
 
 __all__ = [
     "assert_equal",
-    "compare",
     "default_equal_fns",
     "default_unpack_fns",
     "is_equal",
@@ -50,22 +49,6 @@ def default_equal_fns() -> list[Callable[..., api.EqualFnResult]]:
         ]
 
     return _DEFAULT_EQUAL_FNS.copy()
-
-
-def compare(
-    actual: Any,
-    expected: Any,
-    aliases: Mapping[Alias, Any] | None = None,
-    **kwargs: Any,
-) -> list[api.CompareError]:
-    return api.compare(
-        actual,
-        expected,
-        unpack_fns=default_unpack_fns(),
-        equal_fns=default_equal_fns(),
-        aliases=aliases,
-        **kwargs,
-    )
 
 
 def is_equal(

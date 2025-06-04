@@ -1,7 +1,6 @@
 from . import api, builtin
 from ._default import (
     assert_equal,
-    compare,
     default_equal_fns,
     default_unpack_fns,
     is_equal,
@@ -21,7 +20,6 @@ __all__ = [
     "__version__",
     "api",
     "assert_equal",
-    "compare",
     "default_equal_fns",
     "default_unpack_fns",
     "is_equal",
