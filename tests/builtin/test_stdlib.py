@@ -1,11 +1,11 @@
-from copy import deepcopy
+from collections import OrderedDict
 
 import pytest
 
 from compyre import alias, api, builtin
 
 
-class TestStdlibMapping:
+class TestCollectionsMapping:
     @pytest.mark.parametrize(
         ("actual", "expected"), [(object(), object()), ({}, object()), (object(), {})]
     )
@@ -18,25 +18,29 @@ class TestStdlibMapping:
         )
 
     def test_pairs(self):
-        index = ("index",)
+        def getitem(obj, index):
+            for i in index:
+                obj = obj[i]
+            return obj
+
         actual = {"foo": "afoo", "bar": [0, 1, 2], "nested": {"baz": True}}
-        expected = {"foo": "efoo", "bar": [0, -1, -2], "nested": {"baz": False}}
+        expected = {"nested": {"baz": False}, "bar": [0, -1, -2], "foo": "efoo"}
 
         pairs = builtin.unpack_fns.collections_mapping(
-            api.Pair(index=index, actual=deepcopy(actual), expected=deepcopy(expected))
+            api.Pair(index=(), actual=actual, expected=expected)
         )
 
         assert len(pairs) == len(actual)
-        assert [p.index for p in pairs] == [(*index, k) for k in actual.keys()]
-        assert [p.actual for p in pairs] == list(actual.values())
-        assert [p.expected for p in pairs] == list(expected.values())
+        for p in pairs:
+            assert p.actual == getitem(actual, p.index)
+            assert p.expected == getitem(expected, p.index)
 
     def test_keys_mismatch(self):
         actual = {"foo": "foo", "bar": "bar"}
         expected = {"foo": "foo", "baz": "baz"}
 
         result = builtin.unpack_fns.collections_mapping(
-            api.Pair(index=(), actual=deepcopy(actual), expected=deepcopy(expected))
+            api.Pair(index=(), actual=actual, expected=expected)
         )
         assert isinstance(result, Exception)
         assert all(
@@ -45,7 +49,7 @@ class TestStdlibMapping:
         )
 
 
-class TestStdlibSequence:
+class TestCollectionsSequence:
     @pytest.mark.parametrize(
         ("actual", "expected"),
         [(object(), object()), ([], object()), (object(), []), ({}, {})],
@@ -64,7 +68,7 @@ class TestStdlibSequence:
         expected = ["bar", 1, [False]]
 
         pairs = builtin.unpack_fns.collections_sequence(
-            api.Pair(index=index, actual=deepcopy(actual), expected=deepcopy(expected))
+            api.Pair(index=index, actual=actual, expected=expected)
         )
 
         assert len(pairs) == len(actual)
@@ -77,13 +81,65 @@ class TestStdlibSequence:
         expected = ["baz"]
 
         result = builtin.unpack_fns.collections_sequence(
-            api.Pair(index=(), actual=deepcopy(actual), expected=deepcopy(expected))
+            api.Pair(index=(), actual=actual, expected=expected)
         )
         assert isinstance(result, Exception)
         assert all(
             s in str(result)
             for s in ["sequence length mismatch", str(len(actual)), str(len(expected))]
         )
+
+
+class TestCollectionsOrderedDict:
+    @pytest.mark.parametrize(
+        ("actual", "expected"),
+        [(object(), OrderedDict()), (OrderedDict(), object()), (OrderedDict(), {})],
+    )
+    def test_not_supported(self, actual, expected):
+        assert (
+            builtin.unpack_fns.collections_ordered_dict(
+                api.Pair(index=(), actual=actual, expected=expected)
+            )
+            is None
+        )
+
+    def test_pairs(self):
+        index = ("index",)
+        actual = OrderedDict(
+            [("foo", "afoo"), ("bar", [0, 1, 2]), ("nested", {"baz": True})]
+        )
+        expected = OrderedDict(
+            [("foo", "efoo"), ("bar", [0, -1, -2]), ("nested", {"baz": False})]
+        )
+
+        pairs = builtin.unpack_fns.collections_ordered_dict(
+            api.Pair(index=index, actual=actual, expected=expected)
+        )
+
+        assert len(pairs) == len(actual)
+        assert [p.index for p in pairs] == [(*index, k) for k in actual.keys()]
+        assert [p.actual for p in pairs] == list(actual.values())
+        assert [p.expected for p in pairs] == list(expected.values())
+
+    def test_keys_mismatch(self):
+        actual = OrderedDict({"foo": "foo", "bar": "bar"})
+        expected = OrderedDict({"foo": "foo", "baz": "baz"})
+
+        result = builtin.unpack_fns.collections_ordered_dict(
+            api.Pair(index=(), actual=actual, expected=expected)
+        )
+        assert isinstance(result, Exception)
+        assert "ordered keys mismatch" in str(result)
+
+    def test_keys_order_mismatch(self):
+        actual = OrderedDict([("foo", "foo"), ("bar", "bar")])
+        expected = OrderedDict([("bar", "bar"), ("foo", "foo")])
+
+        result = builtin.unpack_fns.collections_ordered_dict(
+            api.Pair(index=(), actual=actual, expected=expected)
+        )
+        assert isinstance(result, Exception)
+        assert "ordered keys mismatch" in str(result)
 
 
 class TestBuiltinsIntFloat:
