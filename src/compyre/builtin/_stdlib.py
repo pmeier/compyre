@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+import cmath
+import math
 from collections import OrderedDict
 from collections.abc import Mapping, Sequence
-from math import isclose
 from typing import Annotated
 
 from compyre import alias, api
@@ -10,7 +11,7 @@ from compyre import alias, api
 from ._utils import both_isinstance, either_isinstance
 
 __all__ = [
-    "builtins_int_float",
+    "builtins_number",
     "builtins_object",
     "collections_mapping",
     "collections_sequence",
@@ -70,16 +71,17 @@ def collections_ordered_dict(p: api.Pair, /) -> api.UnpackFnResult:
     ]
 
 
-def builtins_int_float(
+def builtins_number(
     p: api.Pair,
     /,
     *,
     rel_tol: Annotated[float, alias.RELATIVE_TOLERANCE] = 1e-9,
     abs_tol: Annotated[float, alias.ABSOLUTE_TOLERANCE] = 0.0,
 ) -> api.EqualFnResult:
-    if not both_isinstance(p, (int, float)) or either_isinstance(p, bool):
+    if not both_isinstance(p, (int, float, complex)) or either_isinstance(p, bool):
         return None
 
+    isclose = cmath.isclose if either_isinstance(p, complex) else math.isclose
     if isclose(p.actual, p.expected, abs_tol=abs_tol, rel_tol=rel_tol):
         return True
     else:
@@ -97,7 +99,7 @@ def builtins_int_float(
         return AssertionError(
             "\n".join(
                 [
-                    f"Real numbers {p.actual} and {p.expected} are not {'equal' if equality else 'close'}!\n",
+                    f"Numbers {p.actual} and {p.expected} are not {'equal' if equality else 'close'}!\n",
                     diff_msg(typ="absolute", diff=abs_diff, tol=abs_tol),
                     diff_msg(typ="relative", diff=rel_diff, tol=rel_tol),
                 ]
