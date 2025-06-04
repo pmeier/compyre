@@ -15,4 +15,6 @@ jobs:
         uses: ./.github/actions/setup-env
 
       - name: Run tests
-        run: uv run pytest --cov compyre --cov ./tests --cov-report term-missing
+        run: |
+          uv run pytest \
+            --cov compyre --cov ./tests --cov-report term-missing --cov-fail-under 100
