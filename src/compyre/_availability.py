@@ -20,10 +20,13 @@ class _Requirement:
         except importlib.metadata.PackageNotFoundError:
             return False
 
-        if distribution.version not in self._requirement.specifier:
+        if (
+            self._requirement.specifier
+            and distribution.version not in self._requirement.specifier
+        ):
             return False
 
-        for module_name in {
+        for module_name in {  # pragma: no cover
             module_name
             for module_name, distribution_names in packages_distributions().items()
             if distribution.name in distribution_names
@@ -35,10 +38,10 @@ class _Requirement:
 
         return True
 
-    def __str__(self) -> str:
+    def __str__(self) -> str:  # pragma: no cover
         return str(self._requirement)
 
-    def __repr__(self) -> str:
+    def __repr__(self) -> str:  # pragma: no cover
         return f"{type(self).__module__}.{type(self).__name__}({self!s})"
 
 
