@@ -1,4 +1,4 @@
-from . import api, builtin
+from . import alias, api, builtin
 from ._default import (
     assert_equal,
     default_equal_fns,

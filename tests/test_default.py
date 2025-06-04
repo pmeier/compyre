@@ -3,6 +3,7 @@ from copy import deepcopy
 import numpy as np
 import pydantic
 import pytest
+import torch
 
 import compyre
 
@@ -52,6 +53,7 @@ def value():
         "numpy": [
             np.array([0.0, 1.0, np.pi]),
         ],
+        "torch": [torch.tensor([-1, 314])],
     }
 
 
