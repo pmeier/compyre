@@ -127,7 +127,7 @@ class TestPandasDataframe:
     def test_equal(self):
         value = pd.DataFrame([1.0], dtype=np.float64)
 
-        result = builtin.equal_fns.pandas_series(
+        result = builtin.equal_fns.pandas_dataframe(
             api.Pair(index=(), actual=value.copy(), expected=value.copy())
         )
         assert result is True
