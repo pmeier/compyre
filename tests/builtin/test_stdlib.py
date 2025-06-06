@@ -163,6 +163,15 @@ class TestBuiltinsNumber:
         )
 
     @pytest.mark.parametrize("expected_type", [int, float, complex])
+    def test_equal(self, expected_type):
+        value = expected_type(1.0)
+
+        result = builtin.equal_fns.builtins_number(
+            api.Pair(index=(), actual=value, expected=value)
+        )
+        assert result is True
+
+    @pytest.mark.parametrize("expected_type", [int, float, complex])
     def test_rtol_equal(self, expected_type):
         rel_tol = 1e-2
         expected = expected_type(1.0)

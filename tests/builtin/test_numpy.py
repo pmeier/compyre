@@ -24,6 +24,14 @@ class TestNumpyNdarray:
             is None
         )
 
+    def test_equal(self):
+        value = np.array([1.0], dtype=np.float64)
+
+        result = builtin.equal_fns.numpy_ndarray(
+            api.Pair(index=(), actual=value.copy(), expected=value.copy())
+        )
+        assert result is True
+
     def test_rtol_equal(self):
         rtol = 1e-2
         expected = np.array([1.0], dtype=np.float64)
