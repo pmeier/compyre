@@ -23,6 +23,14 @@ class TestPandasSeries:
             is None
         )
 
+    def test_equal(self):
+        value = pd.Series([1.0], dtype=np.float64)
+
+        result = builtin.equal_fns.pandas_series(
+            api.Pair(index=(), actual=value.copy(), expected=value.copy())
+        )
+        assert result is True
+
     def test_rtol_equal(self):
         rtol = 1e-2
         expected = pd.Series([1.0], dtype=np.float64)
@@ -115,6 +123,14 @@ class TestPandasDataframe:
             )
             is None
         )
+
+    def test_equal(self):
+        value = pd.DataFrame([1.0], dtype=np.float64)
+
+        result = builtin.equal_fns.pandas_series(
+            api.Pair(index=(), actual=value.copy(), expected=value.copy())
+        )
+        assert result is True
 
     def test_rtol_equal(self):
         rtol = 1e-2

@@ -23,8 +23,8 @@ def pandas_dataframe(
         pd.testing.assert_frame_equal(
             p.actual,
             p.expected,
-            rtol=rtol,
-            atol=atol,
+            rtol=rtol,  # type: ignore[arg-type]
+            atol=atol,  # type: ignore[arg-type]
         )
         return True
     except AssertionError as result:
@@ -48,8 +48,8 @@ def pandas_series(
         pd.testing.assert_series_equal(
             p.actual,
             p.expected,
-            rtol=rtol,
-            atol=atol,
+            rtol=rtol,  # type: ignore[arg-type]
+            atol=atol,  # type: ignore[arg-type]
         )
         return True
     except AssertionError as result:

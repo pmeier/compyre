@@ -24,6 +24,14 @@ class TestTorchTensor:
             is None
         )
 
+    def test_equal(self):
+        value = torch.tensor([1.0], dtype=torch.float64)
+
+        result = builtin.equal_fns.torch_tensor(
+            api.Pair(index=(), actual=value.clone(), expected=value.clone())
+        )
+        assert result is True
+
     def test_rtol_equal(self):
         rtol = 1e-2
         expected = torch.tensor([1.0], dtype=torch.float64)
