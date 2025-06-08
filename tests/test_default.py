@@ -1,6 +1,8 @@
+import dataclasses
 from copy import deepcopy
 
 import numpy as np
+import pandas as pd
 import pydantic
 import pytest
 import torch
@@ -19,6 +21,18 @@ def test_default_equal_fns():
     assert set(compyre.default_equal_fns()) == {
         getattr(compyre.builtin.equal_fns, n) for n in compyre.builtin.equal_fns.__all__
     }
+
+
+@dataclasses.dataclass
+class SimpleObject:
+    foo: str
+    bar: list[int]
+
+
+@dataclasses.dataclass
+class NestedObject:
+    simple_object: SimpleObject
+    baz: bool
 
 
 class SimpleModel(pydantic.BaseModel):
@@ -44,6 +58,9 @@ def value():
             1,
             2.0,
             3.0j,
+            NestedObject(
+                simple_object=SimpleObject(foo="foofoo", bar=[0, 1, 42]), baz=True
+            ),
         ],
         "pydantic": [
             NestedModel(
@@ -54,6 +71,7 @@ def value():
             np.array([0.0, 1.0, np.pi]),
         ],
         "torch": [torch.tensor([-1, 314])],
+        "pandas": [pd.Series([0.0, 1.0, np.pi]), pd.DataFrame([-1, 314])],
     }
 
 
