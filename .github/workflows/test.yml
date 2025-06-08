@@ -5,7 +5,27 @@ on:
 
 jobs:
   pytest:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+          - macos-latest
+        python-version: [ "3.11" ]
+        frozen: ["true"]
+        include:
+          - os: ubuntu-latest
+            python-version: "3.12"
+            frozen: "true"
+          - os: ubuntu-latest
+            python-version: "3.13"
+            frozen: "true"
+          - os: ubuntu-latest
+            python-version: "3.11"
+            frozen: "false"
+      fail-fast: false
+
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout repository
@@ -13,8 +33,12 @@ jobs:
 
       - name: Setup environment
         uses: ./.github/actions/setup-env
+        with:
+          python-version: ${{ matrix.python-version }}
+          frozen: ${{ matrix.frozen }}
 
       - name: Run tests
+        shell: bash
         run: |
           uv run pytest \
             --cov compyre --cov ./tests --cov-report term-missing --cov-fail-under 100
