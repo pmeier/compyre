@@ -23,7 +23,7 @@ classifiers = [
 requires-python = ">=3.11"
 dynamic = ["version"]
 dependencies = [
-    "packaging>=25.0",
+    "packaging",
 ]
 
 [dependency-groups]
