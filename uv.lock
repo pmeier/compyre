@@ -129,7 +129,6 @@ name = "compyre"
 source = { editable = "." }
 dependencies = [
     { name = "packaging" },
-    { name = "pandas" },
 ]
 
 [package.dev-dependencies]
@@ -140,6 +139,7 @@ dev = [
     { name = "mkdocstrings", extra = ["python"] },
     { name = "mypy" },
     { name = "numpy" },
+    { name = "pandas" },
     { name = "pandas-stubs" },
     { name = "pre-commit" },
     { name = "pydantic" },
@@ -150,10 +150,7 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [
-    { name = "packaging", specifier = ">=25.0" },
-    { name = "pandas", specifier = ">=2.2.3" },
-]
+requires-dist = [{ name = "packaging", specifier = ">=25.0" }]
 
 [package.metadata.requires-dev]
 dev = [
@@ -163,6 +160,7 @@ dev = [
     { name = "mkdocstrings", extras = ["python"], specifier = ">=0.29.0" },
     { name = "mypy", specifier = ">=1.15.0" },
     { name = "numpy", specifier = ">=2.2.6" },
+    { name = "pandas", specifier = ">=2.2.3" },
     { name = "pandas-stubs", specifier = ">=2.2.3.250527" },
     { name = "pre-commit", specifier = ">=4.2.0" },
     { name = "pydantic", specifier = ">=2.11.5" },
