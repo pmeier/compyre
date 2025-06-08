@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import cmath
+import dataclasses
 import math
 from collections import OrderedDict
 from collections.abc import Mapping, Sequence
@@ -14,7 +15,9 @@ __all__ = [
     "builtins_number",
     "builtins_object",
     "collections_mapping",
+    "collections_ordered_dict",
     "collections_sequence",
+    "dataclasses_dataclass",
 ]
 
 
@@ -123,3 +126,19 @@ def builtins_object(
             return True
         else:
             return AssertionError(f"{p.actual!r} is not {p.expected!r}")
+
+
+def dataclasses_dataclass(p: api.Pair, /) -> api.UnpackFnResult:
+    # dataclasses.is_dataclass returns True for dataclass instances and types, but we only handle the former
+    if not (
+        dataclasses.is_dataclass(p.actual) and dataclasses.is_dataclass(p.expected)
+    ) or either_isinstance(p, type):
+        return None
+
+    return [
+        api.Pair(
+            index=p.index,
+            actual=dataclasses.asdict(p.actual),  # type: ignore[arg-type]
+            expected=dataclasses.asdict(p.expected),  # type: ignore[arg-type]
+        )
+    ]

@@ -1,4 +1,6 @@
+import dataclasses
 from collections import OrderedDict
+from copy import deepcopy
 
 import pytest
 
@@ -295,3 +297,57 @@ class TestStdlibObject:
             api.Pair(index=(), actual=NoEq(), expected=object()), identity_fallback=True
         )
         assert isinstance(result, AssertionError) and result is not exc
+
+
+@dataclasses.dataclass
+class EmptyDataclass:
+    pass
+
+
+@dataclasses.dataclass
+class SimpleObject:
+    foo: str
+    bar: list[int]
+
+
+@dataclasses.dataclass
+class NestedObject:
+    simple_object: SimpleObject
+    baz: bool
+
+
+class TestPydanticModel:
+    @pytest.mark.parametrize(
+        ("actual", "expected"),
+        [(EmptyDataclass(), object()), (object(), EmptyDataclass())],
+    )
+    def test_not_supported(self, actual, expected):
+        assert (
+            builtin.unpack_fns.dataclasses_dataclass(
+                api.Pair(index=(), actual=actual, expected=expected)
+            )
+            is None
+        )
+
+    def test_pairs(self):
+        index = ("index",)
+        obj = NestedObject(
+            simple_object=SimpleObject(foo="foo", bar=[0, 1, 2]), baz=True
+        )
+
+        pairs = builtin.unpack_fns.dataclasses_dataclass(
+            api.Pair(
+                index=index,
+                actual=deepcopy(obj),
+                expected=deepcopy(obj),
+            )
+        )
+
+        assert len(pairs) == 1
+        pair = pairs[0]
+
+        assert pair.index == index
+
+        obj_dict = dataclasses.asdict(obj)
+        assert pair.actual == obj_dict
+        assert pair.expected == obj_dict
