@@ -22,6 +22,7 @@ def default_unpack_fns() -> list[Callable[..., api.UnpackFnResult]]:
             fn
             for fn in [
                 builtin.unpack_fns.pydantic_model,
+                builtin.unpack_fns.dataclasses_dataclass,
                 builtin.unpack_fns.collections_ordered_dict,
                 builtin.unpack_fns.collections_mapping,
                 builtin.unpack_fns.collections_sequence,
