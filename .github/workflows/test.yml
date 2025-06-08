@@ -38,6 +38,7 @@ jobs:
           frozen: ${{ matrix.frozen }}
 
       - name: Run tests
+        shell: bash
         run: |
           uv run pytest \
             --cov compyre --cov ./tests --cov-report term-missing --cov-fail-under 100
