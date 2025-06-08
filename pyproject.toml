@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "compyre"
-description = "FIXME"
+description = "Fully configurable unpacking and comparison logic for arbitrary objects"
 license = "BSD-3-Clause"
 license-files = ["LICENSE"]
 authors = [
