@@ -1,14 +1,22 @@
 name: setup-env
 description: "Setup environment"
 
+inputs:
+  python-version:
+    default: "3.11"
+    description: "Python version to use"
+  frozen:
+    default: "true"
+    description: "If 'true', creates the env from the lock file without updating"
+
 runs:
   using: composite
 
   steps:
     - name: Install uv
-      uses: astral-sh/setup-uv@v5
+      uses: astral-sh/setup-uv@v6
+      with:
+        python-version: ${{ inputs.python-version }}
 
     - shell: bash
-      run: |
-        # Install project and requirements
-        uv sync --link-mode copy --frozen
+      run: uv sync --link-mode copy ${{ '--frozen' || inputs.frozen }}
