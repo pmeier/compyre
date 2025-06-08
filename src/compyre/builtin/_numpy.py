@@ -16,6 +16,26 @@ def numpy_ndarray(
     equal_nan: Annotated[bool, alias.NAN_EQUALITY] = True,
     verbose: bool = True,
 ) -> api.EqualFnResult:
+    """Checks equality for [numpy.ndarray][]s using [numpy.testing.assert_allclose][].
+
+    Args:
+        p: Pair to be compared.
+        rtol: Relative tolerance. See [numpy.testing.assert_allclose][] for details. Can also be set through
+              [compyre.alias.RELATIVE_TOLERANCE][].
+        atol: Absolute tolerance. See [numpy.testing.assert_allclose][] for details. Can also be set
+              through [compyre.alias.ABSOLUTE_TOLERANCE][].
+        equal_nan: Whether two `NaN` values are considered equal. Can also be set through
+              [compyre.alias.NAN_EQUALITY][].
+        verbose: Whether mismatching values are included in the error message.
+
+    Returns:
+       (None): If [`p.actual`][compyre.api.Pair] and [`p.expected`][compyre.api.Pair] are not [numpy.ndarray][]s.
+       (True): If [numpy.testing.assert_allclose][] returns without error for the input pair.
+       (AssertionError): Any [AssertionError][] raised by [numpy.testing.assert_allclose][] for the input pair.
+
+    Raises:
+        RuntimeError: If [numpy][] is not available.
+    """
     import numpy as np
 
     if not both_isinstance(p, np.ndarray):

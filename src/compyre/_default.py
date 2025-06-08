@@ -16,6 +16,7 @@ _DEFAULT_UNPACK_FNS: list[Callable[..., api.UnpackFnResult]] | None = None
 
 
 def default_unpack_fns() -> list[Callable[..., api.UnpackFnResult]]:
+    """foo"""
     global _DEFAULT_UNPACK_FNS
     if _DEFAULT_UNPACK_FNS is None:
         _DEFAULT_UNPACK_FNS = [

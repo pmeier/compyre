@@ -51,8 +51,9 @@ def available_if(*requirement_strings: str) -> Callable:
     def decorator(fn: Callable) -> Callable:
         @functools.wraps(fn)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
+            # FIXME
             if not all(r.is_available for r in requirements):
-                raise RuntimeError
+                raise RuntimeError()
 
             return fn(*args, **kwargs)
 
