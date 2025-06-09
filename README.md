@@ -20,7 +20,7 @@ If you have answered "yes" for any of the questions above, `compyre` was made fo
 
 ## How do I get started?
 
-Most basic cases can be covered by [`compyre.equal`]() or [`compyre.assert_equal`](). The former provides a boolean check, while the latter raises an `AssertionError` with information what elements mismatch and why.
+Most basic cases can be covered by `compyre.equal` or `compyre.assert_equal`. The former provides a boolean check, while the latter raises an `AssertionError` with information what elements mismatch and why.
 
 ```python
 import dataclasses
