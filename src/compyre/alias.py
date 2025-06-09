@@ -2,8 +2,7 @@ __all__ = ["ABSOLUTE_TOLERANCE", "NAN_EQUALITY", "RELATIVE_TOLERANCE", "Alias"]
 
 
 class Alias:
-    """
-    asda
+    """Alias class.
 
     Args:
         name: Name of the alias for debugging.
