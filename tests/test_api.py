@@ -244,7 +244,7 @@ class TestCompare:
         assert len(errors) == 1
         error = errors[0]
 
-        assert error.index == ()
+        assert error.pair.index == ()
         assert error.exception is exc
 
     def test_unpack_pairs_order(self):
@@ -286,7 +286,7 @@ class TestCompare:
         assert len(errors) == 1
         error = errors[0]
 
-        assert error.index == ()
+        assert error.pair.index == ()
 
         assert isinstance(error.exception, api.CompyreError)
         assert all(
@@ -313,7 +313,7 @@ class TestCompare:
         assert len(errors) == 1
         error = errors[0]
 
-        assert error.index == ()
+        assert error.pair.index == ()
 
         assert isinstance(error.exception, AssertionError)
         assert repr(actual) in str(error.exception)
