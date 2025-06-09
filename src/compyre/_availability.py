@@ -51,8 +51,10 @@ def available_if(*requirement_strings: str) -> Callable:
     def decorator(fn: Callable) -> Callable:
         @functools.wraps(fn)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
-            if not all(r.is_available for r in requirements):
-                raise RuntimeError
+            if not_met := [r for r in requirements if not r.is_available]:
+                parts = [f"The following requirements for {fn.__name__} are not met:\n"]
+                parts.extend(f"- {r}" for r in not_met)
+                raise RuntimeError("\n".join(parts))
 
             return fn(*args, **kwargs)
 
