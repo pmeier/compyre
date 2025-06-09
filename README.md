@@ -4,7 +4,7 @@
 
 `compyre` provides container unpacking and elementwise equality comparisons for arbitrary objects using their native functionality. It offers convenient defaults, while being fully configurable.
 
-!["X all the Y" meme with "compyre all the things" as text](images/meme.png "compyre meme")
+!["X all the Y" meme with "compyre all the things" as text](docs/images/meme.png "compyre meme")
 
 ## Why do I need it?
 
