@@ -96,9 +96,6 @@ def is_equal(
     Returns:
         Whether the inputs are equal.
 
-    Raises:
-        compyre.api.CompyreError: If any input pair cannot be handled.
-
     """
     return api.is_equal(
         actual,
@@ -124,7 +121,6 @@ def assert_equal(
         [compyre.default_equal_fns][]. See [compyre.api.assert_equal][] for a description of the remaining arguments.
 
     Raises:
-        compyre.api.CompyreError: If any input pair cannot be handled.
         AssertionError: If any input pair is not equal.
 
     """
