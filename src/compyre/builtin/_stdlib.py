@@ -135,10 +135,10 @@ def dataclasses_dataclass(p: api.Pair, /) -> api.UnpackFnResult:
     ) or either_isinstance(p, type):
         return None
 
-    return [
+    return collections_mapping(
         api.Pair(
             index=p.index,
             actual=dataclasses.asdict(p.actual),  # type: ignore[arg-type]
             expected=dataclasses.asdict(p.expected),  # type: ignore[arg-type]
         )
-    ]
+    )

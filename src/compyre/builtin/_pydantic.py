@@ -1,6 +1,7 @@
 from compyre._availability import available_if
 from compyre.api import Pair, UnpackFnResult
 
+from ._stdlib import collections_mapping
 from ._utils import both_isinstance
 
 __all__ = ["pydantic_model"]
@@ -14,12 +15,9 @@ def pydantic_model(p: Pair, /) -> UnpackFnResult:
         return None
 
     try:
-        return [
-            Pair(
-                index=p.index,
-                actual=p.actual.model_dump(mode="python"),
-                expected=p.expected.model_dump(mode="python"),
-            )
-        ]
+        actual = p.actual.model_dump(mode="python")
+        expected = p.expected.model_dump(mode="python")
     except Exception as result:
         return result
+
+    return collections_mapping(Pair(index=p.index, actual=actual, expected=expected))
