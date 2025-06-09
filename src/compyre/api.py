@@ -26,22 +26,48 @@ T = TypeVar("T")
 
 @dataclasses.dataclass
 class Pair:
+    """Pair of values to be unpacked or compared for equality with position information.
+
+    Attributes:
+        index: Position of the pair in the overall comparison.
+        actual: Actual value.
+        expected: Expected value.
+
+    """
+
     index: tuple[str | int, ...]
     actual: Any
     expected: Any
 
 
-UnpackFnResult = Sequence[Pair] | Exception | None
-EqualFnResult = bool | Exception | None
+UnpackFnResult = Sequence[Pair] | None | Exception
+"""Return type of an unpacking function.
+
+- [None][] indicates that the function cannot handle the input [compyre.api.Pair][].
+- Any [Exception][] indicates that the function can generally handle the input [compyre.api.Pair][], but something is
+  wrong.
+"""
+EqualFnResult = bool | None | Exception
+"""Return type of an equality function.
+
+- [None][] indicates that the equality function cannot handle the input [compyre.api.Pair][].
+- [True][] indicates that the input [compyre.api.Pair][] is equal.
+- Both [False][] and any [Exception][] indicate that the input [compyre.api.Pair][] is not equal, with the latter being
+  able to convey the reason.
+"""
 
 
 @dataclasses.dataclass
 class CompareError:
+    """Comparison exception with pair that caused it."""
+
     pair: Pair
     exception: Exception
 
 
 class CompyreError(Exception):
+    """Exception base class for errors originating from compyre."""
+
     pass
 
 
@@ -54,6 +80,36 @@ def compare(
     aliases: Mapping[Alias, Any] | None = None,
     **kwargs: Any,
 ) -> list[CompareError]:
+    """Low-level comparison of the inputs.
+
+    The `unpack_fns` and `equal_fns` are applied depth-first to the inputs.
+
+    Args:
+        actual: Actual input.
+        expected: Expected input.
+        unpack_fns: Unpacking functions to be used on the inputs. See note below for acceptable signatures.
+        equal_fns: Equality functions to be used on the inputs. See note below for acceptable signatures. If a falsy
+                   value is returned, it will be replaced by an [AssertionError][] with a default message.
+        aliases: Aliases and values to be passed to the `unpack_fns` and `equal_fns`.
+        **kwargs: Keyword arguments to be passed to the `unpack_fns` and `equal_fns`.
+
+    !!! note
+
+        The `unpack_fns` and `equal_fns` have to be callable with a single [compyre.api.Pair][] as positional argument
+        as well as optionally keyword arguments that will be set by the `aliases` and `kwargs`.
+
+    Returns:
+        List of all exceptions *returned and not raised* by the `unpack_fns` and `equal_fns` with the index of the
+            corresponding [compyre.api.Pair][]. If all `unpack_fns` and `equal_fns` return `None`, i.e. cannot handle
+            it, a [compyre.api.CompyreError][] is included.
+
+    Raises:
+        TypeError: If the `unpack_fns` and `equal_fns` cannot be called as described above.
+        TypeError: If any parameter of the `unpack_fns` and `equal_fns` has no default, but no value was passed through
+                   `aliases` or `kwargs`.
+        TypeError: If any value passed to `aliases` or `kwargs` is unused by the `unpack_fns` and `equal_fns`.
+
+    """
     parametrized_unpack_fns, parametrized_equal_fns = _parametrize_fns(
         unpack_fns=unpack_fns,
         equal_fns=equal_fns,
@@ -228,6 +284,20 @@ def is_equal(
     aliases: Mapping[Alias, Any] | None = None,
     **kwargs: Any,
 ) -> bool:
+    """Boolean equality check of the inputs.
+
+    !!! info
+
+        See [compyre.api.compare][] for a description of the arguments.
+
+    Returns:
+        Whether the inputs are equal.
+
+    Raises:
+        CompyreError: If any input pair cannot be handled.
+        Exception: Any exception raised by [compyre.api.compare][].
+
+    """
     return not _extract_equal_errors(
         compare(
             actual,
@@ -249,6 +319,18 @@ def assert_equal(
     aliases: Mapping[Alias, Any] | None = None,
     **kwargs: Any,
 ) -> None:
+    """Equality assertion of the inputs.
+
+    !!! info
+
+        See [compyre.api.compare][] for a description of the arguments.
+
+    Raises:
+        CompyreError: If any input pair cannot be handled.
+        AssertionError: If any input pair is not equal.
+        Exception: Any exception raised by [compyre.api.compare][].
+
+    """
     equal_errors = _extract_equal_errors(
         compare(
             actual,

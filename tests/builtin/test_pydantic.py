@@ -54,7 +54,7 @@ class TestPydanticModel:
 
         pair = pairs[0]
         assert pair.index == (*index, "simple_model")
-        assert pair.actual == pair.expected == simple_model.model_dump(mode="python")
+        assert pair.actual == pair.expected == simple_model.model_dump()
 
         pair = pairs[1]
         assert pair.index == (*index, "baz")

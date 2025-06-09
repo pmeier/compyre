@@ -2,12 +2,15 @@ __all__ = ["ABSOLUTE_TOLERANCE", "NAN_EQUALITY", "RELATIVE_TOLERANCE", "Alias"]
 
 
 class Alias:
-    def __init__(self, name: str) -> None:
-        self._name = name
+    """Alias class.
 
-    @property
-    def name(self) -> str:
-        return self._name
+    Args:
+        name: Name of the alias for debugging.
+
+    """
+
+    def __init__(self, name: str = "") -> None:
+        self.name = name
 
     def __str__(self) -> str:
         return self.name
@@ -17,5 +20,10 @@ class Alias:
 
 
 RELATIVE_TOLERANCE = Alias("relative_tolerance")
+"""Alias for relative tolerances in numerical comparisons."""
+
 ABSOLUTE_TOLERANCE = Alias("absolute_tolerance")
+"""Alias for absolute tolerances in numerical comparisons."""
+
 NAN_EQUALITY = Alias("nan_equality")
+"""Alias for NaN equality checking in numerical comparisons."""
