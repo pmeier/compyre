@@ -22,6 +22,13 @@ theme:
 markdown_extensions:
   - admonition
   - mdx_truly_sane_lists
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
 
 plugins:
   - search
@@ -42,6 +49,14 @@ plugins:
             - https://pandas.pydata.org/docs/objects.inv
             - https://docs.pydantic.dev/latest/objects.inv
             - https://docs.pytorch.org/docs/stable/objects.inv
+
+nav:
+  - index.md
+  - getting-started.md
+  - Tutorials:
+      - tutorials/customization.md
+      - tutorials/aliases.md
+  - api-reference.md
 
 watch:
   - src/compyre

@@ -8,7 +8,7 @@
 
 ## Why do I need it?
 
-Have you ever found yourself in a situation where you needed to test a potentially nested container of values against a reference? [`pytest`](), the de facto standard test framework for Python, features awesome [failure reporting](https://docs.pytest.org/en/stable/example/reportingdemo.html) for builtin types such as dictionaries, lists, integers, strings, and so on.
+Have you ever found yourself in a situation where you needed to test a potentially nested container of values against a reference? [`pytest`](https://docs.pytest.org), the de facto standard test framework for Python, features awesome [failure reporting](https://docs.pytest.org/en/stable/example/reportingdemo.html) for builtin types such as dictionaries, lists, integers, strings, and so on.
 
 But what about other common types that come with their own comparison logic, e.g. [`numpy.ndarray`](https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray) and [`numpy.testing.assert_allclose`](https://numpy.org/doc/stable/reference/generated/numpy.testing.assert_allclose.html)? How do you compare a dictionary or worse a dataclass of these?
 
