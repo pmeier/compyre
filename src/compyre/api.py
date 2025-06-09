@@ -59,9 +59,9 @@ EqualFnResult = bool | None | Exception
 
 @dataclasses.dataclass
 class CompareError:
-    """Comparison exception with position information."""
+    """Comparison exception with pair that caused it."""
 
-    index: tuple[str | int, ...]
+    pair: Pair
     exception: Exception
 
 
@@ -130,7 +130,7 @@ def compare(
 
         if unpack_result is not None:
             if isinstance(unpack_result, Exception):
-                errors.append(CompareError(index=pair.index, exception=unpack_result))
+                errors.append(CompareError(pair=pair, exception=unpack_result))
             else:
                 for p in reversed(unpack_result):
                     pairs.appendleft(p)
@@ -153,7 +153,7 @@ def compare(
             )
 
         if isinstance(equal_result, Exception):
-            errors.append(CompareError(index=pair.index, exception=equal_result))
+            errors.append(CompareError(pair, exception=equal_result))
 
     return errors
 
@@ -366,7 +366,7 @@ def _extract_equal_errors(errors: list[CompareError]) -> list[CompareError]:
 def _format_compare_errors(errors: list[CompareError]) -> str:
     parts = []
     for e in errors:
-        i = ".".join(map(str, e.index))
+        i = ".".join(map(str, e.pair.index))
         m = f"{type(e.exception).__name__}: {e.exception}"
         parts.append(f"{i}\n{indent(m, ' ' * 4)}")
     return "\n".join(parts)
