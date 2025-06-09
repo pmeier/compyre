@@ -22,7 +22,7 @@ __all__ = [
 
 
 def collections_mapping(p: api.Pair, /) -> api.UnpackFnResult:
-    """Unpacks [collections.abc.Mapping][]s
+    """Unpack [collections.abc.Mapping][]s.
 
     Args:
         p: Pair to be unpacked.
@@ -59,7 +59,7 @@ def collections_mapping(p: api.Pair, /) -> api.UnpackFnResult:
 
 
 def collections_sequence(p: api.Pair, /) -> api.UnpackFnResult:
-    """Unpacks [collections.abc.Sequence][]s
+    """Unpack [collections.abc.Sequence][]s.
 
     Args:
         p: Pair to be unpacked.
@@ -86,7 +86,7 @@ def collections_sequence(p: api.Pair, /) -> api.UnpackFnResult:
 
 
 def collections_ordered_dict(p: api.Pair, /) -> api.UnpackFnResult:
-    """Unpacks [collections.OrderedDict][]s
+    """Unpack [collections.OrderedDict][]s.
 
     !!! warning
 
@@ -129,7 +129,7 @@ def builtins_number(
     rel_tol: Annotated[float, alias.RELATIVE_TOLERANCE] = 1e-9,
     abs_tol: Annotated[float, alias.ABSOLUTE_TOLERANCE] = 0.0,
 ) -> api.EqualFnResult:
-    """Checks equality for [int][], [float][], [complex][] numbers using [math.isclose][] or [cmath.isclose][].
+    """Check equality for [int][], [float][], [complex][] numbers using [math.isclose][] or [cmath.isclose][].
 
     Args:
         p: Pair to be compared.
@@ -143,6 +143,7 @@ def builtins_number(
             [complex][]s.
        (True): If [math.isclose][] or [cmath.isclose][] returns [True][] for the input pair.
        (AssertionError): If [math.isclose][] or [cmath.isclose][] returns [False][] for the input pair.
+
     """
     if not both_isinstance(p, (int, float, complex)) or either_isinstance(p, bool):
         return None
@@ -175,7 +176,7 @@ def builtins_number(
 def builtins_object(
     p: api.Pair, /, *, identity_fallback: bool = True
 ) -> api.EqualFnResult:
-    """Checks equality for arbitrary objects
+    """Check equality for arbitrary objects.
 
     !!! info
 
@@ -196,6 +197,7 @@ def builtins_object(
        (AssertionError): Whether the equality check, and if `identity_fallback` is set, the identity check returns
             [False][].
        (Exception): Any [Exception][] raised by the equality check if `identity_fallback` is not set.
+
     """
     try:
         if p.actual == p.expected:
@@ -213,6 +215,20 @@ def builtins_object(
 
 
 def dataclasses_dataclass(p: api.Pair, /) -> api.UnpackFnResult:
+    """Unpack [`@dataclasses.dataclass`][dataclasses.dataclass]es using [dataclasses.asdict][].
+
+    Args:
+        p: Pair to be unpacked.
+
+    Returns:
+        (None): If [`p.actual`][compyre.api.Pair] and [`p.expected`][compyre.api.Pair] are not
+            [`@dataclasses.dataclass`][dataclasses.dataclass]es.
+        (list[api.Pair]): The [`actual`][compyre.api.Pair] and [`expected`][compyre.api.Pair] values of each pair are
+            the corresponding values of the input objects, while the [`index`][compyre.api.Pair] is `p.index` extended
+            by the corresponding field name.
+        (ValueError): If the fields of [`p.actual`][compyre.api.Pair] and [`p.expected`][compyre.api.Pair] mismatch.
+
+    """
     # dataclasses.is_dataclass returns True for dataclass instances and types, but we only handle the former
     if not (
         dataclasses.is_dataclass(p.actual) and dataclasses.is_dataclass(p.expected)

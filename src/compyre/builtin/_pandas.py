@@ -14,7 +14,7 @@ def pandas_dataframe(
     rtol: Annotated[float, alias.RELATIVE_TOLERANCE] = 1e-5,
     atol: Annotated[float, alias.ABSOLUTE_TOLERANCE] = 1e-8,
 ) -> api.EqualFnResult:
-    """Checks equality for [pandas.DataFrame][]s using [pandas.testing.assert_frame_equal][].
+    """Check equality for [pandas.DataFrame][]s using [pandas.testing.assert_frame_equal][].
 
     Args:
         p: Pair to be compared.
@@ -30,6 +30,7 @@ def pandas_dataframe(
 
     Raises:
         RuntimeError: If [pandas][] is not available.
+
     """
     import pandas as pd
 
@@ -56,7 +57,7 @@ def pandas_series(
     rtol: Annotated[float, alias.RELATIVE_TOLERANCE] = 1e-5,
     atol: Annotated[float, alias.ABSOLUTE_TOLERANCE] = 1e-8,
 ) -> api.EqualFnResult:
-    """Checks equality for [pandas.Series][]s using [pandas.testing.assert_series_equal][].
+    """Check equality for [pandas.Series][]s using [pandas.testing.assert_series_equal][].
 
     Args:
         p: Pair to be compared.
@@ -72,6 +73,7 @@ def pandas_series(
 
     Raises:
         RuntimeError: If [pandas][] is not available.
+
     """
     import pandas as pd
 

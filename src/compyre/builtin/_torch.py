@@ -15,7 +15,7 @@ def torch_tensor(
     atol: Annotated[float | None, alias.ABSOLUTE_TOLERANCE] = None,
     equal_nan: Annotated[bool, alias.NAN_EQUALITY] = False,
 ) -> api.EqualFnResult:
-    """Checks equality for [torch.Tensor][]s using [torch.testing.assert_close][].
+    """Check equality for [torch.Tensor][]s using [torch.testing.assert_close][].
 
     Args:
         p: Pair to be compared.
@@ -35,6 +35,7 @@ def torch_tensor(
 
     Raises:
         RuntimeError: If [torch][] is not available.
+
     """
     import torch
 

@@ -16,7 +16,7 @@ def numpy_ndarray(
     equal_nan: Annotated[bool, alias.NAN_EQUALITY] = True,
     verbose: bool = True,
 ) -> api.EqualFnResult:
-    """Checks equality for [numpy.ndarray][]s using [numpy.testing.assert_allclose][].
+    """Check equality for [numpy.ndarray][]s using [numpy.testing.assert_allclose][].
 
     Args:
         p: Pair to be compared.
@@ -35,6 +35,7 @@ def numpy_ndarray(
 
     Raises:
         RuntimeError: If [numpy][] is not available.
+
     """
     import numpy as np
 

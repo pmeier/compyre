@@ -26,12 +26,13 @@ T = TypeVar("T")
 
 @dataclasses.dataclass
 class Pair:
-    """Pair of values to be unpacked or compared for equality with position information
+    """Pair of values to be unpacked or compared for equality with position information.
 
     Attributes:
         index: Position of the pair in the overall comparison.
         actual: Actual value.
         expected: Expected value.
+
     """
 
     index: tuple[str | int, ...]
@@ -40,14 +41,14 @@ class Pair:
 
 
 UnpackFnResult = Sequence[Pair] | None | Exception
-"""Return type of an unpacking function
+"""Return type of an unpacking function.
 
 - [None][] indicates that the function cannot handle the input [compyre.api.Pair][].
 - Any [Exception][] indicates that the function can generally handle the input [compyre.api.Pair][], but something is
   wrong.
 """
 EqualFnResult = bool | None | Exception
-"""Return type of an equality function
+"""Return type of an equality function.
 
 - [None][] indicates that the equality function cannot handle the input [compyre.api.Pair][].
 - [True][] indicates that the input [compyre.api.Pair][] is equal.
@@ -58,14 +59,14 @@ EqualFnResult = bool | None | Exception
 
 @dataclasses.dataclass
 class CompareError:
-    """Comparison exception with position information"""
+    """Comparison exception with position information."""
 
     index: tuple[str | int, ...]
     exception: Exception
 
 
 class CompyreError(Exception):
-    """Exception base class for errors originating from compyre"""
+    """Exception base class for errors originating from compyre."""
 
     pass
 
@@ -79,7 +80,7 @@ def compare(
     aliases: Mapping[Alias, Any] | None = None,
     **kwargs: Any,
 ) -> list[CompareError]:
-    """Low-level comparison function of the input
+    """Low-level comparison of the inputs.
 
     The `unpack_fns` and `equal_fns` are applied depth-first to the inputs.
 
@@ -107,6 +108,7 @@ def compare(
         TypeError: If any parameter of the `unpack_fns` and `equal_fns` has no default, but no value was passed through
                    `aliases` or `kwargs`.
         TypeError: If any value passed to `aliases` or `kwargs` is unused by the `unpack_fns` and `equal_fns`.
+
     """
     parametrized_unpack_fns, parametrized_equal_fns = _parametrize_fns(
         unpack_fns=unpack_fns,
@@ -282,7 +284,7 @@ def is_equal(
     aliases: Mapping[Alias, Any] | None = None,
     **kwargs: Any,
 ) -> bool:
-    """Boolean equality check of the inputs
+    """Boolean equality check of the inputs.
 
     !!! info
 
@@ -294,6 +296,7 @@ def is_equal(
     Raises:
         CompyreError: If any input pair cannot be handled.
         Exception: Any exception raised by [compyre.api.compare][].
+
     """
     return not _extract_equal_errors(
         compare(
@@ -316,7 +319,7 @@ def assert_equal(
     aliases: Mapping[Alias, Any] | None = None,
     **kwargs: Any,
 ) -> None:
-    """Equality assertion of the inputs
+    """Equality assertion of the inputs.
 
     !!! info
 
@@ -326,8 +329,8 @@ def assert_equal(
         CompyreError: If any input pair cannot be handled.
         AssertionError: If any input pair is not equal.
         Exception: Any exception raised by [compyre.api.compare][].
-    """
 
+    """
     equal_errors = _extract_equal_errors(
         compare(
             actual,
