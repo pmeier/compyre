@@ -39,9 +39,8 @@ class TestPydanticModel:
 
     def test_pairs(self):
         index = ("index",)
-        model = NestedModel(
-            simple_model=SimpleModel(foo="foo", bar=[0, 1, 2]), baz=True
-        )
+        simple_model = SimpleModel(foo="foo", bar=[0, 1, 2])
+        model = NestedModel(simple_model=simple_model, baz=True)
 
         pairs = builtin.unpack_fns.pydantic_model(
             api.Pair(
@@ -51,14 +50,15 @@ class TestPydanticModel:
             )
         )
 
-        assert len(pairs) == 1
+        assert len(pairs) == 2
+
         pair = pairs[0]
+        assert pair.index == (*index, "simple_model")
+        assert pair.actual == pair.expected == simple_model.model_dump(mode="python")
 
-        assert pair.index == index
-
-        model_dumped = model.model_dump(mode="python")
-        assert pair.actual == model_dumped
-        assert pair.expected == model_dumped
+        pair = pairs[1]
+        assert pair.index == (*index, "baz")
+        assert pair.actual == pair.expected == True  # noqa: E712
 
     @pytest.mark.parametrize(
         ("actual", "expected"),

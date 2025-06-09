@@ -331,23 +331,23 @@ class TestPydanticModel:
 
     def test_pairs(self):
         index = ("index",)
-        obj = NestedObject(
-            simple_object=SimpleObject(foo="foo", bar=[0, 1, 2]), baz=True
-        )
+        simple_object = SimpleObject(foo="foo", bar=[0, 1, 2])
+        nested_object = NestedObject(simple_object=simple_object, baz=True)
 
         pairs = builtin.unpack_fns.dataclasses_dataclass(
             api.Pair(
                 index=index,
-                actual=deepcopy(obj),
-                expected=deepcopy(obj),
+                actual=deepcopy(nested_object),
+                expected=deepcopy(nested_object),
             )
         )
 
-        assert len(pairs) == 1
+        assert len(pairs) == 2
+
         pair = pairs[0]
+        assert pair.index == (*index, "simple_object")
+        assert pair.actual == pair.expected == dataclasses.asdict(simple_object)
 
-        assert pair.index == index
-
-        obj_dict = dataclasses.asdict(obj)
-        assert pair.actual == obj_dict
-        assert pair.expected == obj_dict
+        pair = pairs[1]
+        assert pair.index == (*index, "baz")
+        assert pair.actual == pair.expected == True  # noqa: E712
