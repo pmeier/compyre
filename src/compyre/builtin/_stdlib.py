@@ -7,9 +7,7 @@ from collections import OrderedDict
 from collections.abc import Mapping, Sequence
 from typing import Annotated
 
-from compyre import alias, api
-
-from ._utils import both_isinstance, either_isinstance
+from compyre import alias, api, utils
 
 __all__ = [
     "builtins_number",
@@ -36,7 +34,7 @@ def collections_mapping(p: api.Pair, /) -> api.UnpackFnResult:
         (ValueError): If the keys of [`p.actual`][compyre.api.Pair] and [`p.expected`][compyre.api.Pair] mismatch.
 
     """
-    if not both_isinstance(p, Mapping):
+    if not utils.both_isinstance(p, Mapping):
         return None
 
     extra = p.actual.keys() - p.expected.keys()
@@ -73,7 +71,7 @@ def collections_sequence(p: api.Pair, /) -> api.UnpackFnResult:
         (ValueError): If the length of [`p.actual`][compyre.api.Pair] and [`p.expected`][compyre.api.Pair] mismatch.
 
     """
-    if not both_isinstance(p, Sequence) or either_isinstance(p, str):
+    if not utils.both_isinstance(p, Sequence) or utils.either_isinstance(p, str):
         return None
 
     if (la := len(p.actual)) != (le := len(p.expected)):
@@ -106,7 +104,7 @@ def collections_ordered_dict(p: api.Pair, /) -> api.UnpackFnResult:
             mismatch.
 
     """
-    if not both_isinstance(p, OrderedDict):
+    if not utils.both_isinstance(p, OrderedDict):
         return None
 
     if (aks := list(p.actual.keys())) != (eks := list(p.expected.keys())):
@@ -145,10 +143,12 @@ def builtins_number(
        (AssertionError): If [math.isclose][] or [cmath.isclose][] returns [False][] for the input pair.
 
     """
-    if not both_isinstance(p, (int, float, complex)) or either_isinstance(p, bool):
+    if not utils.both_isinstance(p, (int, float, complex)) or utils.either_isinstance(
+        p, bool
+    ):
         return None
 
-    isclose = cmath.isclose if either_isinstance(p, complex) else math.isclose
+    isclose = cmath.isclose if utils.either_isinstance(p, complex) else math.isclose
     if isclose(p.actual, p.expected, abs_tol=abs_tol, rel_tol=rel_tol):
         return True
 
@@ -232,7 +232,7 @@ def dataclasses_dataclass(p: api.Pair, /) -> api.UnpackFnResult:
     # dataclasses.is_dataclass returns True for dataclass instances and types, but we only handle the former
     if not (
         dataclasses.is_dataclass(p.actual) and dataclasses.is_dataclass(p.expected)
-    ) or either_isinstance(p, type):
+    ) or utils.either_isinstance(p, type):
         return None
 
     return collections_mapping(

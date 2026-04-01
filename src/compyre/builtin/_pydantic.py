@@ -1,14 +1,13 @@
+from compyre import api, utils
 from compyre._availability import available_if
-from compyre.api import Pair, UnpackFnResult
 
 from ._stdlib import collections_mapping
-from ._utils import both_isinstance
 
 __all__ = ["pydantic_model"]
 
 
 @available_if("pydantic>=2,<3")
-def pydantic_model(p: Pair, /) -> UnpackFnResult:
+def pydantic_model(p: api.Pair, /) -> api.UnpackFnResult:
     """Unpack [pydantic.BaseModel][]s using [pydantic.BaseModel.model_dump][].
 
     Args:
@@ -29,7 +28,7 @@ def pydantic_model(p: Pair, /) -> UnpackFnResult:
     """
     import pydantic
 
-    if not both_isinstance(p, pydantic.BaseModel):
+    if not utils.both_isinstance(p, pydantic.BaseModel):
         return None
 
     try:
@@ -38,4 +37,6 @@ def pydantic_model(p: Pair, /) -> UnpackFnResult:
     except Exception as result:
         return result
 
-    return collections_mapping(Pair(index=p.index, actual=actual, expected=expected))
+    return collections_mapping(
+        api.Pair(index=p.index, actual=actual, expected=expected)
+    )
