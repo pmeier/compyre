@@ -124,6 +124,8 @@ def assert_equal(
         AssertionError: If any input pair is not equal.
 
     """
+    __tracebackhide__ = True
+
     return api.assert_equal(
         actual,
         expected,

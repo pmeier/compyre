@@ -331,6 +331,8 @@ def assert_equal(
         Exception: Any exception raised by [compyre.api.compare][].
 
     """
+    __tracebackhide__ = True
+
     equal_errors = _extract_equal_errors(
         compare(
             actual,
