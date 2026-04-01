@@ -9,3 +9,5 @@
 ::: compyre.builtin.equal_fns
 
 ::: compyre.alias
+
+::: compyre.utils

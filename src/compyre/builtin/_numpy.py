@@ -1,9 +1,7 @@
 from typing import Annotated
 
-from compyre import alias, api
+from compyre import alias, api, utils
 from compyre._availability import available_if
-
-from ._utils import both_isinstance
 
 
 @available_if("numpy")
@@ -39,7 +37,7 @@ def numpy_ndarray(
     """
     import numpy as np
 
-    if not both_isinstance(p, np.ndarray):
+    if not utils.both_isinstance(p, np.ndarray):
         return None
 
     try:

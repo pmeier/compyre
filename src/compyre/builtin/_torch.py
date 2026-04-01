@@ -1,9 +1,7 @@
 from typing import Annotated
 
-from compyre import alias, api
+from compyre import alias, api, utils
 from compyre._availability import available_if
-
-from ._utils import both_isinstance
 
 
 @available_if("torch")
@@ -39,7 +37,7 @@ def torch_tensor(
     """
     import torch
 
-    if not both_isinstance(p, torch.Tensor):
+    if not utils.both_isinstance(p, torch.Tensor):
         return None
 
     try:

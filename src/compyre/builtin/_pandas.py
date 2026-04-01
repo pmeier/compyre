@@ -1,9 +1,7 @@
 from typing import Annotated
 
-from compyre import alias, api
+from compyre import alias, api, utils
 from compyre._availability import available_if
-
-from ._utils import both_isinstance
 
 
 @available_if("pandas")
@@ -34,7 +32,7 @@ def pandas_dataframe(
     """
     import pandas as pd
 
-    if not both_isinstance(p, pd.DataFrame):
+    if not utils.both_isinstance(p, pd.DataFrame):
         return None
 
     try:
@@ -77,7 +75,7 @@ def pandas_series(
     """
     import pandas as pd
 
-    if not both_isinstance(p, pd.Series):
+    if not utils.both_isinstance(p, pd.Series):
         return None
 
     try:
