@@ -118,6 +118,7 @@ def compare(
     )
 
     pairs: Deque[Pair] = deque([Pair(index=(), actual=actual, expected=expected)])
+    seen: set[tuple[int, int]] = {(id(actual), id(expected))}
     errors: list[CompareError] = []
     while pairs:
         pair = pairs.popleft()
@@ -133,7 +134,10 @@ def compare(
                 errors.append(CompareError(pair=pair, exception=unpack_result))
             else:
                 for p in reversed(unpack_result):
-                    pairs.appendleft(p)
+                    key = (id(p.actual), id(p.expected))
+                    if key not in seen:
+                        seen.add(key)
+                        pairs.appendleft(p)
             continue
 
         equal_result: EqualFnResult = None

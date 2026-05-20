@@ -1,10 +1,11 @@
+import dataclasses
 import inspect
 from copy import deepcopy
 from typing import Annotated, Any
 
 import pytest
 
-from compyre import alias, api, builtin
+from compyre import alias, api, builtin, utils
 
 
 class TestParametrizeFns:
@@ -228,6 +229,100 @@ class TestExtractAlias:
 
 
 class TestCompare:
+    def test_circular_reference_two_nodes(self):
+        @dataclasses.dataclass
+        class Node:
+            value: int
+            peer: Any = None
+
+        a = Node(value=1)
+        b = Node(value=1)
+        a.peer = b
+        b.peer = a
+
+        c = Node(value=1)
+        d = Node(value=1)
+        c.peer = d
+        d.peer = c
+
+        def unpack_node(p, /):
+            if not utils.both_isinstance(p, Node):
+                return None
+
+            return [
+                api.Pair(
+                    index=(*p.index, "value"),
+                    actual=p.actual.value,
+                    expected=p.expected.value,
+                ),
+                api.Pair(
+                    index=(*p.index, "peer"),
+                    actual=p.actual.peer,
+                    expected=p.expected.peer,
+                ),
+            ]
+
+        def equal_fn(p, /):
+            return p.actual == p.expected
+
+        errors = api.compare(
+            [a, b],
+            [c, d],
+            unpack_fns=[
+                builtin.unpack_fns.collections_sequence,
+                unpack_node,
+            ],
+            equal_fns=[equal_fn],
+        )
+        assert not errors
+
+    def test_circular_reference_mismatch(self):
+        @dataclasses.dataclass
+        class Node:
+            value: int
+            peer: Any = None
+
+        a = Node(value=1)
+        b = Node(value=2)
+        a.peer = b
+        b.peer = a
+
+        c = Node(value=1)
+        d = Node(value=3)
+        c.peer = d
+        d.peer = c
+
+        def unpack_node(p, /):
+            if not (isinstance(p.actual, Node) and isinstance(p.expected, Node)):
+                return None
+            return [
+                api.Pair(
+                    index=(*p.index, "value"),
+                    actual=p.actual.value,
+                    expected=p.expected.value,
+                ),
+                api.Pair(
+                    index=(*p.index, "peer"),
+                    actual=p.actual.peer,
+                    expected=p.expected.peer,
+                ),
+            ]
+
+        def equal_fn(p, /):
+            return p.actual == p.expected
+
+        errors = api.compare(
+            [a, b],
+            [c, d],
+            unpack_fns=[
+                builtin.unpack_fns.collections_sequence,
+                unpack_node,
+            ],
+            equal_fns=[equal_fn],
+        )
+        assert len(errors) == 1
+        assert errors[0].pair.index == (1, "value")
+
     def test_unpack_fn_exception(self):
         exc = Exception()
 
