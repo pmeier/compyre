@@ -7,26 +7,27 @@ jobs:
   pytest:
     strategy:
       matrix:
-        os:
-          - ubuntu-latest
-          - windows-latest
-          - macos-latest
-        python-version: [ "3.11" ]
-        frozen: ["true"]
+        python-version:
+          - "3.11"
+          - "3.12"
+          - "3.13"
+          - "3.14"
+        os: ["ubuntu-latest"]
+        upgrade: ["false"]
         include:
-          - os: ubuntu-latest
-            python-version: "3.12"
-            frozen: "true"
-          - os: ubuntu-latest
-            python-version: "3.13"
-            frozen: "true"
-          - os: ubuntu-latest
+          - os: windows-latest
             python-version: "3.11"
-            frozen: "false"
+            upgrade: "false"
+          - os: macos-latest
+            python-version: "3.11"
+            upgrade: "false"
+          - os: ubuntu-latest
+            python-version: "3.14"
+            upgrade: "true"
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
-    name: test / pytest (${{ matrix.os }}, ${{ matrix.python-version }}${{ matrix.frozen != 'true' && ', unfrozen' || '' }})
+    name: test / pytest (${{ matrix.os }}, ${{ matrix.python-version }}${{ matrix.upgrade == 'true' && ', upgrade' || '' }})
 
     steps:
       - name: Checkout repository
