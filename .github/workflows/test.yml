@@ -7,21 +7,22 @@ jobs:
   pytest:
     strategy:
       matrix:
-        os:
-          - ubuntu-latest
-          - windows-latest
-          - macos-latest
-        python-version: [ "3.11" ]
+        python-version:
+          - "3.11"
+          - "3.12"
+          - "3.13"
+          - "3.14"
+        os: ["ubuntu-latest"]
         frozen: ["true"]
         include:
-          - os: ubuntu-latest
-            python-version: "3.12"
-            frozen: "true"
-          - os: ubuntu-latest
-            python-version: "3.13"
-            frozen: "true"
-          - os: ubuntu-latest
+          - os: windows-latest
             python-version: "3.11"
+            frozen: "true"
+          - os: macos-latest
+            python-version: "3.11"
+            frozen: "true"
+          - os: ubuntu-latest
+            python-version: "3.14"
             frozen: "false"
       fail-fast: false
 
