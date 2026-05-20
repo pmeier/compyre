@@ -4,10 +4,10 @@ description: "Setup environment"
 inputs:
   python-version:
     default: "3.11"
-    description: "Python version to use"
-  frozen:
-    default: "true"
-    description: "If 'true', creates the env from the lock file without updating"
+    description: Python version to use
+  upgrade:
+    default: "false"
+    description: If 'true', upgrades all packages before creating the env
 
 runs:
   using: composite
@@ -19,8 +19,8 @@ runs:
         python-version: ${{ inputs.python-version }}
 
     - shell: bash
-      run: uv sync --link-mode copy --frozen
+      if: ${{ inputs.upgrade == 'true' }}
+      run: uv lock --upgrade
 
     - shell: bash
-      if: ${{ inputs.frozen != 'true' }}
-      run: uv sync --link-mode copy
+      run: uv sync --link-mode copy --locked

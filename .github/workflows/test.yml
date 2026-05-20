@@ -13,17 +13,17 @@ jobs:
           - "3.13"
           - "3.14"
         os: ["ubuntu-latest"]
-        frozen: ["true"]
+        upgrade: ["false"]
         include:
           - os: windows-latest
             python-version: "3.11"
-            frozen: "true"
+            upgrade: "false"
           - os: macos-latest
             python-version: "3.11"
-            frozen: "true"
+            upgrade: "false"
           - os: ubuntu-latest
             python-version: "3.14"
-            frozen: "false"
+            upgrade: "true"
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
